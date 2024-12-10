@@ -1,4 +1,4 @@
-import lustre_fullstack/lib/path.{type Path}
+import client/lib/path.{type Path}
 
 pub type Msg {
     AddSong(title: String, path: Path)

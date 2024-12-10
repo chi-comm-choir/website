@@ -4,9 +4,11 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/effect.{type Effect}
 
-import lustre_fullstack/lib/model.{type Model, Model}
-import lustre_fullstack/lib/msg.{type Msg}
-import lustre_fullstack/pages/app
+import client/lib
+import client/lib/model.{type Model, Model}
+import client/lib/msg.{type Msg}
+import client/lib/route.{type Route}
+import client/pages/app
 
 pub fn main() {
   let app = lustre.application(init, update, view)
@@ -16,8 +18,12 @@ pub fn main() {
 }
 
 fn init(_) -> #(Model, Effect(Msg)) {
-  let model = Model(songs: [])
-  let effect = effect.none()
+  let model = Model(
+    route: lib.get_route(),
+    songs: []
+  )
+  let effect = effect.batch([
+  ])
 
   #(model, effect)
 }
