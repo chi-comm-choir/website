@@ -21,6 +21,11 @@ gleam_erlang = ">= 0.33.0 and < 1.0.0"
 cors_builder = ">= 2.0.2 and < 3.0.0"
 gleam_http = ">= 3.7.2 and < 4.0.0"
 client = { path = "../client" }
+shared = { path = "../shared" }
+cake = ">= 2.1.0 and < 3.0.0"
+decode = ">= 1.0.0 and < 2.0.0"
+sqlight = ">= 0.9.1 and < 1.0.0"
+gleam_json = ">= 2.1.0 and < 3.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
