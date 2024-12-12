@@ -28,13 +28,13 @@ fn init(_) -> #(Model, Effect(Msg)) {
   #(model, effect)
 }
 
-fn update(_model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
+fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    msg.AddSong(title, path) -> todo
-    msg.RenameSong(from, to) -> todo
+    msg.AddSong(title, path) -> #(model, effect.none())
+    msg.RenameSong(from, to) -> #(model, effect.none())
   }
 }
 
-fn view(model: Model) -> Element(Msg) {
+pub fn view(model: Model) -> Element(Msg) {
   app.app(model)
 }
