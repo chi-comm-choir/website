@@ -2,6 +2,7 @@
 # You typically do not need to edit this file
 
 packages = [
+  { name = "argv", version = "1.0.2", build_tools = ["gleam"], requirements = [], otp_app = "argv", source = "hex", outer_checksum = "BA1FF0929525DEBA1CE67256E5ADF77A7CDDFE729E3E3F57A5BDCAA031DED09D" },
   { name = "birl", version = "1.7.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "ranger"], otp_app = "birl", source = "hex", outer_checksum = "5C66647D62BCB11FE327E7A6024907C4A17954EF22865FE0940B54A852446D01" },
   { name = "cake", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "cake", source = "hex", outer_checksum = "141FEBE63A3BBD2872232BBB61B83E75F9367A4C07DD825286D58AF8D86D7702" },
   { name = "client", version = "1.0.0", build_tools = ["gleam"], requirements = ["decipher", "filepath", "gleam_json", "gleam_stdlib", "lustre", "lustre_http", "modem", "plinth"], source = "local", path = "../client" },
@@ -44,6 +45,7 @@ packages = [
 ]
 
 [requirements]
+argv = { version = ">= 1.0.2 and < 2.0.0" }
 cake = { version = ">= 2.1.0 and < 3.0.0" }
 client = { path = "../client" }
 cors_builder = { version = ">= 2.0.2 and < 3.0.0" }
