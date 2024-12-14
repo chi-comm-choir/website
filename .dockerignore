@@ -1,3 +1,5 @@
+.github
+
 # flyctl launch added from .gitignore
 **/*.beam
 **/*.ez
