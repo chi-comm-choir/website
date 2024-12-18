@@ -9,14 +9,13 @@ import wisp/wisp_mist
 pub fn main() {
   wisp.configure_logger()
 
-  let assert #(host, Ok(port)) = 
-    case argv.load().arguments {
+  let assert #(host, Ok(port)) = case argv.load().arguments {
     ["--host", h, "--port", p] -> #(h, int.parse(p))
     ["--host", h] -> #(h, Ok(8001))
     ["--port", p] -> #("localhost", int.parse(p))
     _ -> #("0.0.0.0", Ok(8080))
   }
-  
+
   let secret_key_base = ""
   let assert Ok(_) =
     router.handle_request

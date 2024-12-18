@@ -7,7 +7,7 @@ import sqlight.{type Connection, type Value}
 pub fn execute_read(
   read_query: ReadQuery,
   params: List(Value),
-  decoder: fn(Dynamic) -> Result(a, List(dynamic.DecodeError))
+  decoder: fn(Dynamic) -> Result(a, List(dynamic.DecodeError)),
 ) {
   let prepared_statement =
     read_query

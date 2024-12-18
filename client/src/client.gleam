@@ -1,13 +1,10 @@
 import lustre
-import lustre/attribute
-import lustre/element.{type Element}
-import lustre/element/html
 import lustre/effect.{type Effect}
+import lustre/element.{type Element}
 
 import client/lib
 import client/lib/model.{type Model, Model}
 import client/lib/msg.{type Msg}
-import client/lib/route.{type Route}
 import client/pages/app
 
 pub fn main() {
@@ -18,20 +15,24 @@ pub fn main() {
 }
 
 fn init(_) -> #(Model, Effect(Msg)) {
-  let model = Model(
-    route: lib.get_route(),
-    songs: []
-  )
-  let effect = effect.batch([
-  ])
+  let model = Model(route: lib.get_route(), songs: [])
+  let effect = effect.batch([])
 
   #(model, effect)
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    msg.AddSong(title, path) -> #(model, effect.none())
-    msg.RenameSong(from, to) -> #(model, effect.none())
+    msg.AddSong(_title, _path) -> #(model, effect.none())
+    msg.RenameSong(_from, _to) -> #(model, effect.none())
+    msg.SongsReceived(get_songs_result) ->
+      case get_songs_result {
+        Ok(get_songs) -> #(
+          Model(..model, songs: get_songs.songs),
+          effect.none(),
+        )
+        Error(_) -> #(model, effect.none())
+      }
   }
 }
 

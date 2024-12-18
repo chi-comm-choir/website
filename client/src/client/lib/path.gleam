@@ -1,1 +1,2 @@
-pub type Path = String
+pub type Path =
+  String

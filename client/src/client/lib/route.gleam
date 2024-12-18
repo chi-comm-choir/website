@@ -1,4 +1,6 @@
 pub type Route {
-    NotFound
-    Index
+  NotFound
+  Index
+  About
+  Songs
 }

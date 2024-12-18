@@ -1,6 +1,6 @@
 import client
 import client/lib/model.{Model}
-import client/lib/route.{type Route, Index, NotFound}
+import client/lib/route.{type Route, About, Index, NotFound, Songs}
 import cors_builder as cors
 import gleam/http
 import lustre/element
@@ -24,15 +24,17 @@ pub fn handle_request(req: Request) -> Response {
   }
 }
 
-fn page_routes(_req: Request, route_segments: List(String)) -> Response {
-  let route: Route = case route_segments {
-    [] -> Index
-    _ -> NotFound
+fn page_routes(req: Request, route_segments: List(String)) -> Response {
+  let #(route, response) = case route_segments {
+    [] -> #(Index, 200)
+    ["about"] -> #(About, 200)
+    ["songs"] -> #(Songs, 200)
+    _ -> #(NotFound, 404)
   }
 
   let model = Model(route: route, songs: [])
 
-  wisp.response(200)
+  wisp.response(response)
   |> wisp.set_header("Content-Type", "text-html")
   |> wisp.html_body(
     client.view(model)

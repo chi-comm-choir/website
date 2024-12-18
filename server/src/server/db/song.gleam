@@ -26,8 +26,7 @@ pub type ListSongsDBRow {
 
 pub fn get_songs_query() -> Select {
   select.new()
-  |> select.selects([
-  ])
+  |> select.selects([])
   |> select.from_table("song")
   |> select.group_by("song.id")
   |> select.order_by_desc("song.created_at")
@@ -35,15 +34,10 @@ pub fn get_songs_query() -> Select {
 
 pub fn run_song_query(select: Select, params: List(Value)) {
   select.to_query(select)
-  |> db.execute_read(params, fn(data) {
-  })
+  |> db.execute_read(params, fn(data) { todo })
 }
 
-pub fn song_rows_to_song(
-  _req: Request,
-  rows: List(ListSongsDBRow),
-  _file_exists: Bool,
-) {
+pub fn song_rows_to_song(_req: Request, rows: List(ListSongsDBRow)) {
   use row <- list.map(rows)
   Song(
     id: row.song_id,
@@ -61,10 +55,11 @@ pub fn song_to_json(song: Song) {
     #("title", json.string(song.title)),
     case song.href {
       Some(href) -> #("href", json.string(href))
-      None -> case song.filepath {
-        Some(filepath) -> #("filepath", json.string(filepath))
-        None -> panic as "Invalid State"
-      }
+      None ->
+        case song.filepath {
+          Some(filepath) -> #("filepath", json.string(filepath))
+          None -> panic as "Invalid State"
+        }
     },
     #("tags", json.array(song.tags, fn(tag) { json.string(tag) })),
     #("created_at", json.int(song.created_at)),

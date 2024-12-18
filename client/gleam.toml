@@ -1,6 +1,7 @@
 name = "client"
 target = "javascript"
 version = "1.0.0"
+gleam = ">= 0.32.0"
 
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
@@ -14,7 +15,7 @@ version = "1.0.0"
 # https://gleam.run/writing-gleam/gleam-toml/.
 
 [dependencies]
-gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+gleam_stdlib = ">= 0.34.0 and < 0.48.0" # 0.48 removes gleam_bytes_builder, which prevents glisten from compiling
 decipher = ">= 1.2.1 and < 2.0.0"
 lustre = ">= 4.6.3 and < 5.0.0"
 lustre_http = ">= 0.6.0 and < 1.0.0"
@@ -22,6 +23,9 @@ gleam_json = ">= 2.1.0 and < 3.0.0"
 modem = ">= 2.0.1 and < 3.0.0"
 plinth = ">= 0.5.5 and < 1.0.0"
 filepath = ">= 1.1.0 and < 2.0.0"
+shared = { path = "../shared" }
+decode = ">= 1.0.0 and < 2.0.0"
+lustre_ui = ">= 0.4.0 and < 1.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
