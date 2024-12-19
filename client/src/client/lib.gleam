@@ -1,6 +1,8 @@
-import client/lib/msg.{type Msg, GetSongsResponse, SongsReceived}
-import client/lib/route.{type Route, Index, NotFound, Songs}
+import client/lib/model.{type Model}
+import client/lib/msg.{type Msg}
+import client/lib/route.{type Route, Active, NotFound}
 import decode
+import gleam/json
 import gleam/uri
 import lustre/effect.{type Effect}
 import lustre_http
@@ -13,8 +15,7 @@ pub fn get_route() -> Route {
   let assert Ok(uri) = do_get_route() |> uri.parse
 
   case uri.path |> uri.path_segments {
-    [] -> Index
-    ["songs"] -> Songs
+    [] -> Active
     _ -> NotFound
   }
 }
@@ -28,7 +29,7 @@ pub fn get_songs() -> Effect(Msg) {
   let response_decoder =
     decode.into({
       use songs <- decode.parameter
-      GetSongsResponse(songs)
+      msg.GetSongsResponse(songs)
     })
     |> decode.field("songs", decode.list(song_decoder()))
 
@@ -36,7 +37,48 @@ pub fn get_songs() -> Effect(Msg) {
     url,
     lustre_http.expect_json(
       fn(data) { response_decoder |> decode.from(data) },
-      SongsReceived,
+      msg.SongsReceived,
+    ),
+  )
+}
+
+pub fn get_show_song() -> Effect(Msg) {
+  let url = "/api/songs/" <> get_song_id()
+
+  lustre_http.get(
+    url,
+    lustre_http.expect_json(
+      fn(data) { decode.from(song_decoder(), data) },
+      msg.ShowSongReceived,
+    ),
+  )
+}
+
+fn get_song_id() -> String {
+  let uri = case do_get_route() |> uri.parse {
+    Ok(uri) -> uri
+    _ -> panic as "Invalid uri"
+  }
+
+  case uri.path |> uri.path_segments {
+    ["song", song_id] -> song_id
+    _ -> ""
+  }
+}
+
+pub fn create_song(model: Model) {
+  lustre_http.post(
+    "/api/songs",
+    json.object([
+      #("title", json.string(model.create_song_title)),
+      case model.create_song_use_filepath {
+        True -> #("filepath", json.string(model.create_song_filepath))
+        False -> #("href", json.string(model.create_song_href))
+      },
+    ]),
+    lustre_http.expect_json(
+      msg.message_error_decoder(),
+      msg.CreateSongResponded,
     ),
   )
 }

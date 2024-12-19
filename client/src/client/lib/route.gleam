@@ -1,6 +1,9 @@
 pub type Route {
+  // pages
   NotFound
-  Index
-  About
-  Songs
+  Active
+
+  // api
+  CreateSong
+  ShowSong(song_id: Int)
 }

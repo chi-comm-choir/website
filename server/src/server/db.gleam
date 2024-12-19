@@ -1,8 +1,7 @@
-import cake.{type ReadQuery}
+import cake.{type ReadQuery, type WriteQuery}
 import cake/dialect/sqlite_dialect
 import gleam/dynamic.{type Dynamic}
-import gleam/option.{Some}
-import sqlight.{type Connection, type Value}
+import sqlight.{type Value}
 
 pub fn execute_read(
   read_query: ReadQuery,
@@ -16,6 +15,20 @@ pub fn execute_read(
 
   use conn <- sqlight.with_connection("file:songs.db?mode=memory")
   sqlight.query(prepared_statement, conn, params, decoder)
+}
+
+pub fn execute_write(
+  write_query: WriteQuery(a),
+  _params: List(Value),
+  // unsure if i need these
+) {
+  let prepared_statement =
+    write_query
+    |> sqlite_dialect.write_query_to_prepared_statement
+    |> cake.get_sql
+
+  use conn <- sqlight.with_connection("file:songs.db?mode=memory")
+  sqlight.exec(prepared_statement, conn)
 }
 
 @external(erlang, "erlang", "list_to_tuple")

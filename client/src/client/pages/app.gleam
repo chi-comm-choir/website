@@ -1,7 +1,7 @@
 import client/components/navbar
 import client/lib/model.{type Model}
 import client/lib/msg.{type Msg}
-import client/lib/route.{About, Index, NotFound, Songs}
+import client/lib/route.{Active, NotFound}
 import client/pages/about
 import client/pages/index
 import client/pages/notfound
@@ -24,10 +24,10 @@ pub fn app(model: Model) -> Element(Msg) {
       ],
       [
         case model.route {
-          Index -> index.index(model)
-          About -> about.about(model)
-          Songs -> songs.songs(model)
-          NotFound -> notfound.notfound(model)
+          // pages
+          Active -> songs.songs(model)
+          //  TODO: Uhh how does routing work actually
+          _ -> notfound.notfound(model)
         },
       ],
     ),

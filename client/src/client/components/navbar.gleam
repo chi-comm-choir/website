@@ -8,9 +8,13 @@ import lustre/ui/button
 import lustre/ui/classes
 
 pub fn navbar(_model: Model) -> Element(Msg) {
-  html.div([classes.shadow_md(), classes.py_md(), attribute.style([#("display", "flex"), #("justify-content", "center")])], [
-    ui.centre(
-      [],
+  html.div(
+    [
+      classes.shadow_md(),
+      classes.py_md(),
+      attribute.style([#("text-align", "center")]),
+    ],
+    [
       html.nav([], [
         html.a([attribute.href("/")], [ui.button([], [element.text("Index")])]),
         html.a([], [element.text(" | ")]),
@@ -26,7 +30,7 @@ pub fn navbar(_model: Model) -> Element(Msg) {
           ]),
         ]),
       ]),
-    ),
-    html.hr([attribute.style([#("opacity", "0")])]),
-  ])
+      html.hr([attribute.style([#("opacity", "0")])]),
+    ],
+  )
 }

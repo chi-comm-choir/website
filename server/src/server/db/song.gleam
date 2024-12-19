@@ -9,7 +9,7 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import server/db
+import server/db.{list_to_tuple}
 import shared.{type Song, Song}
 import sqlight.{type Value}
 import wisp.{type Request}
@@ -34,7 +34,23 @@ pub fn get_songs_query() -> Select {
 
 pub fn run_song_query(select: Select, params: List(Value)) {
   select.to_query(select)
-  |> db.execute_read(params, fn(data) { todo })
+  |> db.execute_read(params, fn(data) {
+    decode.into({
+      use song_id <- decode.parameter
+      use song_title <- decode.parameter
+      use song_href <- decode.parameter
+      use song_filepath <- decode.parameter
+      use created_at <- decode.parameter
+
+      ListSongsDBRow(song_id, song_title, song_href, song_filepath, created_at)
+    })
+    |> decode.field(0, decode.int)
+    |> decode.field(1, decode.string)
+    |> decode.field(2, decode.optional(decode.string))
+    |> decode.field(3, decode.optional(decode.string))
+    |> decode.field(4, decode.int)
+    |> decode.from(data |> list_to_tuple)
+  })
 }
 
 pub fn song_rows_to_song(_req: Request, rows: List(ListSongsDBRow)) {
