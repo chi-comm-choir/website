@@ -1,9 +1,4 @@
-import gleam/io
 import gleam/option.{type Option}
-
-pub fn main() {
-  io.println("Hello from lustre_fullstack!")
-}
 
 pub type Song {
   Song(
@@ -18,4 +13,9 @@ pub type Song {
 
 pub type Tag {
   Tag(id: Int, name: String)
+}
+
+pub type AuthUser {
+  Member
+  Admin
 }

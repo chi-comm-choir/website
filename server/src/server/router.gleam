@@ -1,11 +1,14 @@
 import client
 import client/lib/model.{Model}
-import client/lib/route.{type Route, Active, NotFound}
+import client/lib/route.{
+  About, CreateSong, Index, Login, NotFound, ShowSong, Songs,
+}
 import cors_builder as cors
 import gleam/http
 import gleam/int
 import gleam/option.{None, Some}
 import lustre/element
+import server/db/user_session
 import server/response
 import server/routes/song
 import server/routes/songs
@@ -47,7 +50,16 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
 
 fn page_routes(req: Request, route_segments: List(String)) -> Response {
   let #(route, response) = case route_segments {
-    [] -> #(Active, 200)
+    [] -> #(Index, 200)
+    ["about"] -> #(About, 200)
+    ["songs"] -> #(Songs, 200)
+    ["auth", "login"] -> #(Login, 200)
+    ["create-song"] -> #(CreateSong, 200)
+    ["song", song_id] ->
+      case int.parse(song_id) {
+        Ok(id) -> #(ShowSong(id), 200)
+        Error(_) -> #(NotFound, 404)
+      }
     _ -> #(NotFound, 404)
   }
 
@@ -59,6 +71,12 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       create_song_filepath: "",
       create_song_use_filepath: False,
       create_song_error: None,
+      login_password: "",
+      login_error: None,
+      auth_user: case user_session.get_user_priviledges_from_session(req) {
+        Ok(priviledges) -> Some(priviledges)
+        Error(_) -> None
+      },
       songs: case songs.list_songs(req) {
         Ok(songs) -> songs
         Error(_) -> []

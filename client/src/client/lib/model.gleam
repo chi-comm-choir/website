@@ -1,6 +1,6 @@
 import client/lib/route.{type Route}
 import gleam/option.{type Option}
-import shared.{type Song}
+import shared.{type AuthUser, type Song}
 
 pub type Model {
   Model(
@@ -10,6 +10,9 @@ pub type Model {
     create_song_filepath: String,
     create_song_use_filepath: Bool,
     create_song_error: Option(String),
+    login_password: String,
+    login_error: Option(String),
+    auth_user: Option(AuthUser),
     songs: List(Song),
     show_song: Option(Song),
   )

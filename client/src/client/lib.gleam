@@ -1,7 +1,10 @@
 import client/lib/model.{type Model}
 import client/lib/msg.{type Msg}
-import client/lib/route.{type Route, Active, NotFound}
+import client/lib/route.{
+  type Route, About, CreateSong, Index, Login, NotFound, ShowSong, Songs,
+}
 import decode
+import gleam/int
 import gleam/json
 import gleam/uri
 import lustre/effect.{type Effect}
@@ -15,7 +18,16 @@ pub fn get_route() -> Route {
   let assert Ok(uri) = do_get_route() |> uri.parse
 
   case uri.path |> uri.path_segments {
-    [] -> Active
+    [] -> Index
+    ["about"] -> About
+    ["songs"] -> Songs
+    ["auth", "login"] -> Login
+    ["create-song"] -> CreateSong
+    ["song", song_id] ->
+      case int.parse(song_id) {
+        Ok(id) -> ShowSong(id)
+        Error(_) -> NotFound
+      }
     _ -> NotFound
   }
 }

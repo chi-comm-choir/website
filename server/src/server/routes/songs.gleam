@@ -99,7 +99,7 @@ fn insert_song_to_db(req: Request, song: CreateSong) {
         Some(_) -> "href"
         None ->
           case song.filepath {
-            Some(filepath) -> "filepath"
+            Some(_) -> "filepath"
             None -> panic as "Unreachable due to guard"
           }
       },

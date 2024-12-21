@@ -7,7 +7,7 @@ import client/lib
 import client/lib/model.{type Model, Model}
 import client/lib/msg.{type Msg}
 import client/lib/route
-import client/pages/app
+import client/routes/app
 
 import modem
 
@@ -27,6 +27,9 @@ fn init(_) -> #(Model, Effect(Msg)) {
       create_song_filepath: "",
       create_song_use_filepath: False,
       create_song_error: None,
+      login_password: "",
+      login_error: None,
+      auth_user: None,
       songs: [],
       show_song: None,
     )

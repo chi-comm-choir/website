@@ -1,4 +1,3 @@
-import client/lib/path.{type Path}
 import client/lib/route.{type Route}
 import gleam/dynamic
 import gleam/option.{type Option}

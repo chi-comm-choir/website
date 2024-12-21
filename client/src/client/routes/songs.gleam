@@ -27,3 +27,11 @@ pub fn songs(model: Model) {
     ),
   ])
 }
+
+pub fn create_song(_model: Model) {
+  todo as "implement song creation"
+}
+
+pub fn show_song(_model: Model) {
+  todo as "implement show song"
+}
