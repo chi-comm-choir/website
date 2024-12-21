@@ -15,7 +15,7 @@ pub fn get_user_priviledges_from_session(
   req: Request,
 ) -> Result(AuthUser, String) {
   use session_token <- result.try(
-    wisp.get_cookie(req, "chi_session_token", wisp.PlainText)
+    wisp.get_cookie(req, "lustre_fullstack_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found"),
   )
 
