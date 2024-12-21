@@ -40,16 +40,18 @@ pub fn page_scaffold(content: element.Element(a)) {
         attribute.type_("image/x-icon"),
         rel("icon"),
       ]),
-      link([href("/static/client.min.css"), rel("stylesheet")]),
       script([src("/static/client.min.mjs"), attribute.type_("module")], ""),
+      // TODO: Custom CSS
+      // link([href("/static/client.min.css"), rel("stylesheet")]),
+      // TODO: Custom JS
       // script(
-    //   [
-    //     src("https://plausible.keii.dev/js/script.js"),
-    //     attribute("data-domain", "kirakira.keii.dev"),
-    //     attribute("defer", ""),
-    //   ],
-    //   "",
-    // ),
+      //   [
+      //     src("https://lustre_fullstack.example/js/script.js"),
+      //     attribute("data-domain", "lustre_fullstack.example"),
+      //     attribute("defer", ""),
+      //   ],
+      //   "",
+      // ),
     ]),
     content,
   ])
