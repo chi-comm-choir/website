@@ -1,10 +1,8 @@
-import server/db/user_session
 import gleam/bool
 import gleam/dynamic
 import gleam/http.{Post}
 import gleam/json
 import gleam/result
-import gleam/string
 import wisp.{type Request, type Response}
 
 pub fn login(req: Request) -> Response {

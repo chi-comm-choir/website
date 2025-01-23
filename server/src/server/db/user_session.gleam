@@ -7,13 +7,12 @@ import gleam/list
 import gleam/result
 import server/db
 import server/token.{generate_token}
-import shared.{type AuthUser, AuthUser}
 import sqlight
 import wisp.{type Request}
 
-pub fn get_user_priviledges_from_session(
+pub fn get_user_id_from_session(
   req: Request,
-) -> Result(AuthUser, String) {
+) -> Result(Int, String) {
   use session_token <- result.try(
     wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found"),
@@ -23,7 +22,7 @@ pub fn get_user_priviledges_from_session(
     select.new()
     |> select.selects([
       select.col("user_session.id"),
-      select.col("user_session.priviledges"),
+      select.col("user_session.user_id"),
     ])
     |> select.from_table("user_session")
     |> select.where(where.eq(
@@ -33,7 +32,7 @@ pub fn get_user_priviledges_from_session(
     |> select.to_query
     |> db.execute_read(
       [sqlight.text(session_token)],
-      dynamic.tuple2(dynamic.int, dynamic.string),
+      dynamic.tuple2(dynamic.int, dynamic.int),
     )
   {
     Ok(users) -> Ok(list.first(users))
@@ -43,14 +42,9 @@ pub fn get_user_priviledges_from_session(
     }
   }
 
-  use user_priviledges_result <- result.try(session_token)
-  case user_priviledges_result {
-    Ok(priviledges) ->
-      case priviledges.1 {
-        "admin" -> Ok(AuthUser(True))
-        "member" -> Ok(AuthUser(False))
-        _ -> Error("Invalid user priviledge level")
-      }
+  use user_id_result <- result.try(session_token)
+  case user_id_result {
+    Ok(id) -> Ok(id.1)
     Error(_) ->
       Error("No user_session found when getting user_session by token")
   }

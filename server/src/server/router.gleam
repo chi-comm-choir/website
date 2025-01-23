@@ -1,13 +1,14 @@
 import client
 import client/lib/model.{Model}
 import client/lib/route.{
-  About, CreateSong, Index, Login, NotFound, ShowSong, Songs,
+  About, CreateSong, Index, NotFound, ShowSong, Songs,
 }
 import cors_builder as cors
 import gleam/http
 import gleam/int
 import gleam/option.{None, Some}
 import lustre/element
+import server/db/auth
 import server/db/user_session
 import server/response
 import server/routes/song
@@ -15,6 +16,7 @@ import server/routes/songs
 import server/routes/auth/login
 import server/scaffold
 import server/web
+import shared.{AuthUser}
 import wisp.{type Request, type Response}
 
 pub fn handle_request(req: Request) -> Response {
@@ -74,8 +76,15 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       create_song_error: None,
       login_password: "",
       login_error: None,
-      auth_user: case user_session.get_user_priviledges_from_session(req) {
-        Ok(priviledges) -> Some(priviledges)
+      auth_user: case user_session.get_user_id_from_session(req) {
+        Ok(user_id) ->
+          case auth.get_user_by_id(user_id) {
+            Ok(user) ->
+              Some(AuthUser(
+                is_admin: auth.is_user_admin(user.id),
+              ))
+            Error(_) -> None
+          }
         Error(_) -> None
       },
       songs: case songs.list_songs(req) {

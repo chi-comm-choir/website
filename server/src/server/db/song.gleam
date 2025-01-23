@@ -1,14 +1,8 @@
-import cake/fragment
-import cake/join
 import cake/select.{type Select}
-import cake/where
 import decode
-import gleam/dynamic
-import gleam/int
-import gleam/json.{type Json}
+import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/result
 import server/db.{list_to_tuple}
 import shared.{type Song, Song}
 import sqlight.{type Value}
