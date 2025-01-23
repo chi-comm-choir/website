@@ -16,7 +16,7 @@ pub fn main() {
     _ -> #("127.0.0.1", Ok(8080))
   }
 
-  let secret_key_base = "server"
+  let secret_key_base = "serversnateiostneiarntsieonatieosntanrsietnearntiesnraieontsor"
   let assert Ok(_) =
     router.handle_request
     |> wisp_mist.handler(secret_key_base)

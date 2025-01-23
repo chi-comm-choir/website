@@ -13,7 +13,7 @@ pub fn execute_read(
     |> sqlite_dialect.read_query_to_prepared_statement
     |> cake.get_sql
 
-  use conn <- sqlight.with_connection("file:songs.db?mode=memory")
+  use conn <- sqlight.with_connection("file:lfs.db?mode=memory")
   sqlight.query(prepared_statement, conn, params, decoder)
 }
 
@@ -27,7 +27,7 @@ pub fn execute_write(
     |> sqlite_dialect.write_query_to_prepared_statement
     |> cake.get_sql
 
-  use conn <- sqlight.with_connection("file:songs.db?mode=memory")
+  use conn <- sqlight.with_connection("file:lfs.db?mode=memory")
   sqlight.exec(prepared_statement, conn)
 }
 

@@ -4,6 +4,7 @@ import gleam/http.{Post}
 import gleam/json
 import gleam/result
 import wisp.{type Request, type Response}
+import server/db/user_session
 
 pub fn login(req: Request) -> Response {
   use body <- wisp.require_json(req)
@@ -47,10 +48,9 @@ fn do_login(req: Request, body: dynamic.Dynamic) -> Response {
       return: Error("Passwords do not match"),
     )
 
-    // TODO: Real session token generation
-    // use session_token <- result.try(user_session.create_user_session(user.id))
+    use session_token <- result.try(user_session.create_user_session())
 
-    Ok("test_session_token")
+    Ok(session_token)
   }
 
   case result {

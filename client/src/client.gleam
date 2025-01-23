@@ -1,3 +1,4 @@
+import gleam/list
 import gleam/option.{None, Some}
 import lustre
 import lustre/effect.{type Effect}
@@ -36,8 +37,14 @@ fn init(_) -> #(Model, Effect(Msg)) {
       songs: [],
       show_song: None,
     )
-  let effect = effect.batch([])
-
+  let effect = effect.batch(
+      [lib.get_auth_user()]
+      |> list.append(case lib.get_route() {
+        // ShowSong(_) -> [get_show_song()]
+        _ -> []
+      }
+    ),
+  )
   #(model, effect)
 }
 
@@ -111,7 +118,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
               effect.batch([
                 // TODO: Things that happen when you successfully login
                 modem.push("#", None, None),
-                // lib.get_auth_user(),
+                lib.get_auth_user(),
               ]),
             )
           }

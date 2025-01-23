@@ -50,19 +50,19 @@ pub fn get_user_id_from_session(
   }
 }
 
-pub fn create_user_session(user_id: Int) {
+pub fn create_user_session() {
   let token = generate_token(64)
 
   let result =
-    [insert.row([insert.int(user_id), insert.string(token)])]
+    [insert.row([insert.string(token)])]
     |> insert.from_values(table_name: "user_session", columns: [
       "user_id", "token",
     ])
     |> insert.to_query
-    |> db.execute_write([sqlight.int(user_id), sqlight.text(token)])
+    |> db.execute_write([sqlight.text(token)])
 
   case result {
     Ok(_) -> Ok(token)
-    Error(_) -> Error("Creating user session")
+    Error(a) -> Error("Creating user session:" <> a.message)
   }
 }

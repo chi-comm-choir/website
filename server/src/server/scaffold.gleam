@@ -40,7 +40,8 @@ pub fn page_scaffold(content: element.Element(a)) {
         attribute.type_("image/x-icon"),
         rel("icon"),
       ]),
-      script([src("/static/client.min.mjs"), attribute.type_("module")], ""),
+      // WARN: Minify when deploying to prod
+      script([src("/static/client.mjs"), attribute.type_("module")], ""),
       // TODO: Custom CSS
       // link([href("/static/client.min.css"), rel("stylesheet")]),
       // TODO: Custom JS

@@ -22,7 +22,6 @@ pub fn get_route() -> Route {
     [] -> Index
     ["about"] -> About
     ["songs"] -> Songs
-    ["auth", "login"] -> Login
     ["create-song"] -> CreateSong
     ["song", song_id] ->
       case int.parse(song_id) {
@@ -37,7 +36,7 @@ pub fn get_route() -> Route {
 pub fn set_url(url: String) -> String
 
 pub fn get_auth_user() -> Effect(Msg) {
-  let url = "/api/auth/validate"
+  let url = "http://dev.jazzkid.xyz/api/auth/validate"
 
   let decoder = dynamic.decode1(
     AuthUser,
