@@ -4,12 +4,13 @@ import client/lib/route.{
   type Route, About, CreateSong, Index, Login, NotFound, ShowSong, Songs,
 }
 import decode
+import gleam/dynamic
 import gleam/int
 import gleam/json
 import gleam/uri
 import lustre/effect.{type Effect}
 import lustre_http
-import shared.{type Song, Song}
+import shared.{type Song, Song, AuthUser}
 
 @external(javascript, "../ffi.mjs", "get_route")
 fn do_get_route() -> String
@@ -34,6 +35,17 @@ pub fn get_route() -> Route {
 
 @external(javascript, "../ffi.mjs", "set_url")
 pub fn set_url(url: String) -> String
+
+pub fn get_auth_user() -> Effect(Msg) {
+  let url = "/api/auth/validate"
+
+  let decoder = dynamic.decode1(
+    AuthUser,
+    dynamic.field("is_admin", dynamic.bool)
+  )
+
+  lustre_http.get(url, lustre_http.expect_json(decoder, msg.AuthUserReceived))
+}
 
 pub fn get_songs() -> Effect(Msg) {
   let url = "/api/posts"

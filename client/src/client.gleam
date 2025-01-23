@@ -8,6 +8,9 @@ import client/lib/model.{type Model, Model}
 import client/lib/msg.{type Msg}
 import client/lib/route
 import client/routes/app
+import client/routes/auth
+
+import shared.{type AuthUser, AuthUser}
 
 import modem
 
@@ -56,6 +59,10 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         _ -> effect.none()
       },
     )
+    msg.AuthUserReceived(auth_user_result) -> case auth_user_result {
+      Ok(auth_user) -> #(Model(..model, auth_user: Some(auth_user)), effect.none())
+      Error(_) -> #(model, effect.none())
+    }
     msg.SongsReceived(get_songs_result) -> {
       case get_songs_result {
         Ok(get_songs) -> #(
@@ -72,6 +79,47 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           effect.none(),
         )
         Error(_) -> #(model, effect.none())
+      }
+    }
+    msg.LoginUpdatePassword(value) -> #(
+      Model(..model, login_password: value),
+      effect.none(),
+    )
+    msg.LoginUpdateError(value) -> #(
+      Model(..model, login_error: value),
+      effect.none(),
+    )
+    msg.RequestLogin -> #(
+      model,
+      auth.login(model),
+    )
+    msg.LoginResponded(resp_result) -> {
+      case resp_result {
+        Ok(resp) -> {
+          case resp.error {
+            Some(err) -> #(
+              model,
+              effect.from(fn(dispatch) { dispatch(msg.LoginUpdateError(Some(err))) })
+            )
+            None -> #(
+              Model(
+                ..model,
+                auth_user: Some(AuthUser(False)),
+                login_password: "",
+                login_error: None,
+              ),
+              effect.batch([
+                // TODO: Things that happen when you successfully login
+                modem.push("#", None, None),
+                // lib.get_auth_user(),
+              ]),
+            )
+          }
+        }
+        Error(_) -> #(
+          model,
+          effect.from(fn(dispatch) { dispatch(msg.LoginUpdateError(Some("HTTP error"))) })
+        )
       }
     }
     msg.CreateSongUpdateTitle(value) -> #(

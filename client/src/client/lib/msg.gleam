@@ -2,13 +2,22 @@ import client/lib/route.{type Route}
 import gleam/dynamic
 import gleam/option.{type Option}
 import lustre_http
-import shared.{type Song, Song}
+import shared.{type Song, Song, type AuthUser}
 
 pub type Msg {
   OnRouteChange(Route)
 
+  AuthUserReceived(Result(AuthUser, lustre_http.HttpError))
+
   SongsReceived(Result(GetSongsResponse, lustre_http.HttpError))
   ShowSongReceived(Result(Song, lustre_http.HttpError))
+
+  LoginUpdatePassword(value: String)
+  LoginUpdateError(value: Option(String))
+  RequestLogin
+  LoginResponded(
+    resp_result: Result(MessageErrorResponse, lustre_http.HttpError),
+  )
 
   CreateSongUpdateTitle(value: String)
   CreateSongUpdateHref(value: String)

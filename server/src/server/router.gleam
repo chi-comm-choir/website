@@ -12,6 +12,7 @@ import server/db/user_session
 import server/response
 import server/routes/song
 import server/routes/songs
+import server/routes/auth/login
 import server/scaffold
 import server/web
 import wisp.{type Request, type Response}
@@ -42,7 +43,7 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
         Error(_) -> response.error("Invalid song_id for song, must be int")
       }
     }
-    // ["api", "auth", "login"] -> login.login(req)
+    ["api", "auth", "login"] -> login.login(req)
     // ["api", "auth", "logout"] -> logout.logout(req)
     _ -> wisp.not_found()
   }
@@ -53,7 +54,7 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
     [] -> #(Index, 200)
     ["about"] -> #(About, 200)
     ["songs"] -> #(Songs, 200)
-    ["auth", "login"] -> #(Login, 200)
+    // ["auth", "login"] -> #(Login, 200)
     ["create-song"] -> #(CreateSong, 200)
     ["song", song_id] ->
       case int.parse(song_id) {

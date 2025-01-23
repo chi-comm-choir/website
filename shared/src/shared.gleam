@@ -16,6 +16,7 @@ pub type Tag {
 }
 
 pub type AuthUser {
-  Member
-  Admin
+  AuthUser(
+    is_admin: Bool,
+  )
 }

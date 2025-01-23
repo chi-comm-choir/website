@@ -7,7 +7,7 @@ import gleam/list
 import gleam/result
 import server/db
 import server/token.{generate_token}
-import shared.{type AuthUser, Admin, Member}
+import shared.{type AuthUser, AuthUser}
 import sqlight
 import wisp.{type Request}
 
@@ -15,7 +15,7 @@ pub fn get_user_priviledges_from_session(
   req: Request,
 ) -> Result(AuthUser, String) {
   use session_token <- result.try(
-    wisp.get_cookie(req, "lustre_fullstack_session_token", wisp.PlainText)
+    wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found"),
   )
 
@@ -43,12 +43,12 @@ pub fn get_user_priviledges_from_session(
     }
   }
 
-  use user_id_result <- result.try(session_token)
-  case user_id_result {
-    Ok(id) ->
-      case id.1 {
-        "admin" -> Ok(Admin)
-        "member" -> Ok(Member)
+  use user_priviledges_result <- result.try(session_token)
+  case user_priviledges_result {
+    Ok(priviledges) ->
+      case priviledges.1 {
+        "admin" -> Ok(AuthUser(True))
+        "member" -> Ok(AuthUser(False))
         _ -> Error("Invalid user priviledge level")
       }
     Error(_) ->

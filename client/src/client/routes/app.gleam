@@ -2,13 +2,12 @@ import client/components/navbar
 import client/lib/model.{type Model}
 import client/lib/msg.{type Msg}
 import client/lib/route.{
-  About, CreateSong, Index, Login, NotFound, ShowSong, Songs,
+  About, CreateSong, Index, NotFound, ShowSong, Songs,
 }
 import client/routes/about
-import client/routes/auth
 import client/routes/index
 import client/routes/songs
-import gleam/option.{Some}
+import gleam/option.{Some, None}
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
@@ -33,8 +32,8 @@ pub fn app(model: Model) -> Element(Msg) {
           Index, _ -> index.index(model)
           About, _ -> about.about(model)
           Songs, _ -> songs.songs(model)
-          Login, _ -> auth.login(model)
           CreateSong, Some(_) -> songs.create_song(model)
+          CreateSong, None -> element.text("403 forbidden")
           ShowSong(_), _ -> songs.show_song(model)
           NotFound, _ -> element.text("404 not found")
           _, _ -> element.text("404 not found")

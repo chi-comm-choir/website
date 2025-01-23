@@ -53,6 +53,10 @@ pub fn page_scaffold(content: element.Element(a)) {
       //   "",
       // ),
     ]),
-    content,
+    html.body([], [
+      html.div([attribute.id("app")], [
+        content,
+      ])
+    ])
   ])
 }
