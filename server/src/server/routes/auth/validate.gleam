@@ -1,4 +1,6 @@
 import gleam/http.{Get}
+import gleam/int
+import gleam/io
 import gleam/json
 import gleam/result
 import server/db/auth
@@ -7,8 +9,6 @@ import server/response
 import wisp.{type Request, type Response}
 
 pub fn validate(req: Request) -> Response {
-  // This handler for `/comments` can respond to both GET and POST requests,
-  // so we pattern match on the method here.
   case req.method {
     Get -> validate_session(req)
     // Post -> create_comment(req)
@@ -17,8 +17,11 @@ pub fn validate(req: Request) -> Response {
 }
 
 fn validate_session(req: Request) -> Response {
+  io.println("running validate_session")
   let result = {
+    io.println("in result expression")
     use user_id <- result.try(user_session.get_user_id_from_session(req))
+    io.println("id:" <> int.to_string(user_id))
 
     use user <- result.try(auth.get_user_by_id(user_id))
 

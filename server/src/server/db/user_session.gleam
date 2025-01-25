@@ -13,9 +13,11 @@ import wisp.{type Request}
 pub fn get_user_id_from_session(
   req: Request,
 ) -> Result(Int, String) {
+  io.println("getting user id from session")
+  let foo = {
   use session_token <- result.try(
     wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
-    |> result.replace_error("No session cookie found"),
+    |> result.replace_error("No session cookie found")
   )
 
   let session_token = case
@@ -37,7 +39,7 @@ pub fn get_user_id_from_session(
   {
     Ok(users) -> Ok(list.first(users))
     Error(err) -> {
-      io.debug(err)
+      io.println(err.message)
       Error("Problem getting user_session by token")
     }
   }
@@ -48,6 +50,9 @@ pub fn get_user_id_from_session(
     Error(_) ->
       Error("No user_session found when getting user_session by token")
   }
+  }
+  io.println(result.unwrap_error(foo, "idk!"))
+  foo
 }
 
 pub fn create_user_session() {
@@ -56,13 +61,13 @@ pub fn create_user_session() {
   let result =
     [insert.row([insert.string(token)])]
     |> insert.from_values(table_name: "user_session", columns: [
-      "user_id", "token",
+      "token",
     ])
     |> insert.to_query
     |> db.execute_write([sqlight.text(token)])
 
   case result {
     Ok(_) -> Ok(token)
-    Error(a) -> Error("Creating user session:" <> a.message)
+    Error(err) -> Error("Creating user session:" <> err.message)
   }
 }

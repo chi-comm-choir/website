@@ -3,6 +3,7 @@ import gleam/erlang/process
 import gleam/int
 import mist
 import server/router
+import server/db
 import wisp
 import wisp/wisp_mist
 
@@ -15,6 +16,8 @@ pub fn main() {
     ["--port", p] -> #("localhost", int.parse(p))
     _ -> #("127.0.0.1", Ok(8080))
   }
+
+  let _ = db.init()
 
   let secret_key_base = "serversnateiostneiarntsieonatieosntanrsietnearntiesnraieontsor"
   let assert Ok(_) =

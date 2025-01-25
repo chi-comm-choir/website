@@ -36,7 +36,7 @@ pub fn get_route() -> Route {
 pub fn set_url(url: String) -> String
 
 pub fn get_auth_user() -> Effect(Msg) {
-  let url = "http://dev.jazzkid.xyz/api/auth/validate"
+  let url = "http://100.112.41.121/api/auth/validate"
 
   let decoder = dynamic.decode1(
     AuthUser,
