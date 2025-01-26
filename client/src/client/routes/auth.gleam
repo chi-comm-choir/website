@@ -8,7 +8,7 @@ import client/lib/msg.{type Msg}
 pub fn login(model: Model) -> Effect(Msg) {
   lustre_http.post(
     // TODO: get the correct server api url here
-    "http://100.112.41.121/api/auth/login",
+    "http://dev.chicommunitychoir.com/api/auth/login",
     json.object([#("password", json.string(model.login_password))]),
     lustre_http.expect_json(msg.message_error_decoder(), msg.LoginResponded)
   )

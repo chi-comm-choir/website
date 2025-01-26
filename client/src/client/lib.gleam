@@ -1,7 +1,7 @@
 import client/lib/model.{type Model}
 import client/lib/msg.{type Msg}
 import client/lib/route.{
-  type Route, About, CreateSong, Index, Login, NotFound, ShowSong, Songs,
+  type Route, About, CreateSong, Index, NotFound, ShowSong, Songs,
 }
 import decode
 import gleam/dynamic
@@ -36,7 +36,7 @@ pub fn get_route() -> Route {
 pub fn set_url(url: String) -> String
 
 pub fn get_auth_user() -> Effect(Msg) {
-  let url = "http://100.112.41.121/api/auth/validate"
+  let url = "http://dev.chicommunitychoir.com/api/auth/validate"
 
   let decoder = dynamic.decode1(
     AuthUser,
