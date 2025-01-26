@@ -36,7 +36,7 @@ pub fn get_route() -> Route {
 pub fn set_url(url: String) -> String
 
 pub fn get_auth_user() -> Effect(Msg) {
-  let url = "http://dev.chicommunitychoir.com/api/auth/validate"
+  let url = "https://dev.chicommunitychoir.com/api/auth/validate"
 
   let decoder = dynamic.decode1(
     AuthUser,
