@@ -24,7 +24,6 @@ pub fn get_user_id_from_session(
     select.new()
     |> select.selects([
       select.col("user_session.id"),
-      select.col("user_session.user_id"),
     ])
     |> select.from_table("user_session")
     |> select.where(where.eq(
