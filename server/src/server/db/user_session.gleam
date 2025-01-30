@@ -35,7 +35,7 @@ pub fn get_user_id_from_session(
     |> select.to_query
     |> db.execute_read(
       [sqlight.text(session_token)],
-      dynamic.tuple2(dynamic.int, dynamic.int),
+      dynamic.int
     )
   {
     Ok(users) -> Ok(list.first(users))
@@ -47,7 +47,7 @@ pub fn get_user_id_from_session(
 
   use user_id_result <- result.try(session_token)
   case user_id_result {
-    Ok(id) -> Ok(id.1)
+    Ok(id) -> Ok(id)
     Error(_) ->
       Error("No user_session found when getting user_session by token")
   }
