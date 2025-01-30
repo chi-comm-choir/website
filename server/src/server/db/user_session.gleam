@@ -20,6 +20,8 @@ pub fn get_user_id_from_session(
     |> result.replace_error("No session cookie found")
   )
 
+  io.println(session_token)
+
   let session_token = case
     select.new()
     |> select.selects([
