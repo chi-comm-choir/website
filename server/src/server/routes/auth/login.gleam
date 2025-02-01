@@ -10,7 +10,7 @@ pub fn login(req: Request) -> Response {
   use body <- wisp.require_json(req)
 
   case req.method {
-    Post -> do_login(req, body)
+    Post -> do_login(req, body, False)
     _ -> wisp.method_not_allowed([Post])
   }
 }
@@ -36,7 +36,7 @@ fn decode_create_user(
   }
 }
 
-fn do_login(req: Request, body: dynamic.Dynamic) -> Response {
+fn do_login(req: Request, body: dynamic.Dynamic, is_admin: Bool) -> Response {
   let result = {
     use user <- result.try(case decode_create_user(body) {
       Ok(val) -> Ok(val)
@@ -48,7 +48,7 @@ fn do_login(req: Request, body: dynamic.Dynamic) -> Response {
       return: Error("Passwords do not match"),
     )
 
-    use session_token <- result.try(user_session.create_user_session())
+    use session_token <- result.try(user_session.create_user_session(is_admin))
 
     Ok(session_token)
   }

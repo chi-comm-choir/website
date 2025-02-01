@@ -38,7 +38,7 @@ pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
   |> db.execute_read([sqlight.int(user_id)], user_db_decoder())
   {
     Ok(users) -> Ok(list.first(users))
-    Error(_) -> Error("Problem getting user by id")
+    Error(e) -> Error("Problem getting user by id: " <> e.message)
   }
 
   use user_result <- result.try(user)

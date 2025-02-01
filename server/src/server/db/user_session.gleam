@@ -10,19 +10,15 @@ import server/token.{generate_token}
 import sqlight
 import wisp.{type Request}
 
-import gleam/int
-
 pub fn get_user_id_from_session(
   req: Request,
 ) -> Result(Int, String) {
   io.println("getting user id from session")
-  let foo = {
+  let result = {
   use req_session_token <- result.try(
     wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found")
   )
-
-  io.println("req_session_token: " <> req_session_token)
 
   let session_token_result = case
     select.new()
@@ -42,7 +38,7 @@ pub fn get_user_id_from_session(
   {
     Ok(users) -> Ok(list.first(users))
     Error(e) -> {
-      Error("Problem getting user_session by token: " <> e.message)
+      Error("Problem getting user_session by token: " <> e.message <> " -- with token: " <> req_session_token)
     }
   }
 
@@ -53,25 +49,21 @@ pub fn get_user_id_from_session(
       Error("No user_session found when getting user_session by token")
   }
   }
-  io.println(int.to_string(result.unwrap(foo, 1)))
-  io.println(result.unwrap_error(foo, "idk!"))
-  foo
+  io.println("result: " <> result.unwrap_error(result, "user id obtained from session."))
+  result
 }
 
-pub fn create_user_session() {
+pub fn create_user_session(is_admin: Bool) {
   let token = generate_token(64)
-  io.println("create user session: " <> token)
 
   let result =
-    [insert.row([insert.string(token)])]
-    |> insert.from_values(table_name: "user_session", columns: [
-      "token",
-    ])
+    [insert.row([insert.string(token), insert.bool(is_admin)])]
+    |> insert.from_values(table_name: "user_session", columns: ["token", "is_admin"])
     |> insert.to_query
     |> db.execute_write([sqlight.text(token)])
 
   case result {
     Ok(_) -> Ok(token)
-    Error(err) -> Error("Creating user session:" <> err.message)
+    Error(err) -> Error("Creating user session:" <> err.message <> " -- with token: " <> token)
   }
 }

@@ -45,7 +45,7 @@ pub fn init() {
 
   let assert Ok(Nil) =
   "
-    create table if not exists user_session (id integer primary key, token varchar(255) not null unique);
+    create table if not exists user_session (id integer primary key, token varchar(255) not null unique, is_admin bool);
   "
   |> sqlight.exec(conn)
 }
