@@ -12,7 +12,7 @@ import wisp.{type Request}
 
 pub fn get_user_id_from_session(
   req: Request,
-) -> Result(#(Int, Int), String) {
+) -> Result(Int, String) {
   io.println("getting user id from session")
   let foo = {
   use req_session_token <- result.try(
@@ -24,9 +24,9 @@ pub fn get_user_id_from_session(
 
   let session_token_result = case
     select.new()
-    |> select.selects([
+    |> select.select(
       select.col("user_session.id"),
-    ])
+    )
     |> select.from_table("user_session")
     |> select.where(where.eq(
       where.col("user_session.token"),
@@ -35,7 +35,7 @@ pub fn get_user_id_from_session(
     |> select.to_query
     |> db.execute_read(
       [sqlight.text(req_session_token)],
-      dynamic.tuple2(dynamic.int, dynamic.int) // decoder
+      dynamic.int // decoder
     )
   {
     Ok(users) -> Ok(list.first(users))

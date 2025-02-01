@@ -20,15 +20,15 @@ fn validate_session(req: Request) -> Response {
   io.println("running validate_session")
   let result = {
     use user_id <- result.try(user_session.get_user_id_from_session(req))
-    io.println("id:" <> int.to_string(user_id.1))
+    io.println("id:" <> int.to_string(user_id))
 
-    use user <- result.try(auth.get_user_by_id(user_id.1))
+    use user <- result.try(auth.get_user_by_id(user_id))
 
     let is_admin = auth.is_user_admin(user.id)
 
     Ok(
       json.object([
-        #("user_id", json.int(user_id.1)),
+        #("user_id", json.int(user_id)),
         #("is_admin", json.bool(is_admin)),
       ])
       |> json.to_string_tree,
