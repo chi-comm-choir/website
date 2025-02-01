@@ -20,7 +20,7 @@ pub fn get_user_id_from_session(
     |> result.replace_error("No session cookie found")
   )
 
-  io.println(req_session_token)
+  io.println("req_session_token: " <> req_session_token)
 
   let session_token_result = case
     select.new()
@@ -39,8 +39,7 @@ pub fn get_user_id_from_session(
     )
   {
     Ok(users) -> Ok(list.first(users))
-    Error(err) -> {
-      io.println(err.message)
+    Error(_) -> {
       Error("Problem getting user_session by token")
     }
   }
@@ -58,9 +57,10 @@ pub fn get_user_id_from_session(
 
 pub fn create_user_session() {
   let token = generate_token(64)
+  io.println("create user session: " <> token)
 
   let result =
-    [insert.row([])]
+    [insert.row([insert.string(token)])]
     |> insert.from_values(table_name: "user_session", columns: [
       "token",
     ])

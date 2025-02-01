@@ -15,7 +15,7 @@ pub fn execute_read(
     |> sqlite_dialect.read_query_to_prepared_statement
     |> cake.get_sql
 
-  io.println(prepared_statement)
+  io.println("read: prepared_statement: " <> prepared_statement)
 
   use conn <- sqlight.with_connection("file:lfs.db")
   sqlight.query(prepared_statement, conn, params, decoder)

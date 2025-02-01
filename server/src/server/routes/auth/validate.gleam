@@ -19,7 +19,6 @@ pub fn validate(req: Request) -> Response {
 fn validate_session(req: Request) -> Response {
   io.println("running validate_session")
   let result = {
-    io.println("in result expression")
     use user_id <- result.try(user_session.get_user_id_from_session(req))
     io.println("id:" <> int.to_string(user_id))
 
