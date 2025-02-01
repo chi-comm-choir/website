@@ -31,6 +31,8 @@ pub fn execute_write(
     |> sqlite_dialect.write_query_to_prepared_statement
     |> cake.get_sql
 
+  io.println("write: prepared_statement: " <> prepared_statement)
+
   use conn <- sqlight.with_connection("file:lfs.db")
   sqlight.exec(prepared_statement, conn)
 }
