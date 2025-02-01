@@ -35,7 +35,7 @@ pub fn get_user_id_from_session(
     |> select.to_query
     |> db.execute_read(
       [sqlight.text(req_session_token)],
-      dynamic.int // decoder
+      dynamic.element(0, dynamic.int) // decoder
     )
   {
     Ok(users) -> Ok(list.first(users))
