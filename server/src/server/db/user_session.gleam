@@ -10,6 +10,8 @@ import server/token.{generate_token}
 import sqlight
 import wisp.{type Request}
 
+import gleam/int
+
 pub fn get_user_id_from_session(
   req: Request,
 ) -> Result(Int, String) {
@@ -51,6 +53,7 @@ pub fn get_user_id_from_session(
       Error("No user_session found when getting user_session by token")
   }
   }
+  io.println(int.to_string(result.unwrap(foo, 1)))
   io.println(result.unwrap_error(foo, "idk!"))
   foo
 }
