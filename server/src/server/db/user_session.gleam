@@ -60,7 +60,7 @@ pub fn create_user_session() {
   let token = generate_token(64)
 
   let result =
-    [insert.row([insert.string(token)])]
+    [insert.row([])]
     |> insert.from_values(table_name: "user_session", columns: [
       "token",
     ])
