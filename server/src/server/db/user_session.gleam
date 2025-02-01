@@ -61,7 +61,7 @@ pub fn create_user_session(is_admin: Bool) {
     [insert.row([insert.string(token), insert.bool(is_admin)])]
     |> insert.from_values(table_name: "user_session", columns: ["token", "is_admin"])
     |> insert.to_query
-    |> db.execute_write([sqlight.text(token)])
+    |> db.execute_write([sqlight.text(token), sqlight.bool(is_admin)])
 
   case result {
     Ok(_) -> Ok(token)
