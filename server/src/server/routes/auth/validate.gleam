@@ -21,10 +21,12 @@ pub fn validate(req: Request) -> Response {
 fn validate_session(req: Request) -> Response {
   io.println("running validate_session")
   let result = {
-    use #(user_id, is_admin) <- result.try(user_session.get_user_from_session(req))
+    use #(user_id, is_admin_int) <- result.try(user_session.get_user_from_session(req))
     io.println("id:" <> int.to_string(user_id))
-    io.println("is_admin:" <> bool.to_string(is_admin))
-
+    let is_admin = case is_admin_int {
+      1 -> True
+      _ -> False
+    }
 
     Ok(
       json.object([
