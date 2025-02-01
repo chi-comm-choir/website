@@ -15,14 +15,14 @@ pub fn get_user_id_from_session(
 ) -> Result(Int, String) {
   io.println("getting user id from session")
   let foo = {
-  use session_token <- result.try(
+  use req_session_token <- result.try(
     wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found")
   )
 
-  io.println(session_token)
+  io.println(req_session_token)
 
-  let session_token = case
+  let session_token_result = case
     select.new()
     |> select.selects([
       select.col("user_session.id"),
@@ -30,11 +30,11 @@ pub fn get_user_id_from_session(
     |> select.from_table("user_session")
     |> select.where(where.eq(
       where.col("user_session.token"),
-      where.string(session_token),
+      where.string(req_session_token),
     ))
     |> select.to_query
     |> db.execute_read(
-      [sqlight.text(session_token)],
+      [sqlight.text(req_session_token)],
       dynamic.int
     )
   {
@@ -45,7 +45,7 @@ pub fn get_user_id_from_session(
     }
   }
 
-  use user_id_result <- result.try(session_token)
+  use user_id_result <- result.try(session_token_result)
   case user_id_result {
     Ok(id) -> Ok(id)
     Error(_) ->

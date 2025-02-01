@@ -3,6 +3,8 @@ import cake/dialect/sqlite_dialect
 import gleam/dynamic.{type Dynamic}
 import sqlight.{type Value}
 
+import gleam/io
+
 pub fn execute_read(
   read_query: ReadQuery,
   params: List(Value),
@@ -12,6 +14,8 @@ pub fn execute_read(
     read_query
     |> sqlite_dialect.read_query_to_prepared_statement
     |> cake.get_sql
+
+  io.println(prepared_statement)
 
   use conn <- sqlight.with_connection("file:lfs.db")
   sqlight.query(prepared_statement, conn, params, decoder)
