@@ -23,8 +23,7 @@ pub fn execute_read(
 
 pub fn execute_write(
   write_query: WriteQuery(a),
-  _params: List(Value),
-  // unsure if i need these
+  params: List(Value),
 ) {
   let prepared_statement =
     write_query
@@ -34,7 +33,7 @@ pub fn execute_write(
   io.println("write: prepared_statement: " <> prepared_statement)
 
   use conn <- sqlight.with_connection("file:lfs.db")
-  sqlight.exec(prepared_statement, conn)
+  sqlight.query(prepared_statement, conn, params, dynamic.int)
 }
 
 @external(erlang, "erlang", "list_to_tuple")
