@@ -22,9 +22,7 @@ fn validate_session(req: Request) -> Response {
     use user_id <- result.try(user_session.get_user_id_from_session(req))
     io.println("id:" <> int.to_string(user_id))
 
-    use user <- result.try(auth.get_user_by_id(user_id))
-
-    let is_admin = auth.is_user_admin(user.id)
+    let is_admin = auth.is_user_admin(user_id)
 
     Ok(
       json.object([

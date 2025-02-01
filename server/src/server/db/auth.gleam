@@ -15,9 +15,9 @@ pub type User {
 fn get_user_base_query() {
   select.new()
   |> select.selects([
-    select.col("user.id")
+    select.col("user_session.id")
   ])
-  |> select.from_table("user")
+  |> select.from_table("user_session")
 }
 
 fn user_db_decoder() {
@@ -33,12 +33,12 @@ fn user_db_decoder() {
 
 pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
   let user = case get_user_base_query()
-  |> select.where(where.eq(where.col("user.id"), where.int(user_id)))
+  |> select.where(where.eq(where.col("user_session.id"), where.int(user_id)))
   |> select.to_query
   |> db.execute_read([sqlight.int(user_id)], user_db_decoder())
   {
     Ok(users) -> Ok(list.first(users))
-    Error(e) -> Error("Problem getting user by id: " <> e.message)
+    Error(e) -> Error("Problem getting user_session by id: " <> e.message)
   }
 
   use user_result <- result.try(user)
