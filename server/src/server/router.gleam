@@ -78,15 +78,8 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       create_song_error: None,
       login_password: "",
       login_error: None,
-      auth_user: case user_session.get_user_id_from_session(req) {
-        Ok(user_id) ->
-          case auth.get_user_by_id(user_id) {
-            Ok(user) ->
-              Some(AuthUser(
-                is_admin: auth.is_user_admin(user.id),
-              ))
-            Error(_) -> None
-          }
+      auth_user: case user_session.get_user_from_session(req) {
+        Ok(#(_, is_admin)) -> Some(AuthUser(is_admin: is_admin))
         Error(_) -> None
       },
       songs: case songs.list_songs(req) {

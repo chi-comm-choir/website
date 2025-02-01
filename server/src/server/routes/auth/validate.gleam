@@ -8,6 +8,8 @@ import server/db/user_session
 import server/response
 import wisp.{type Request, type Response}
 
+import gleam/bool
+
 pub fn validate(req: Request) -> Response {
   case req.method {
     Get -> validate_session(req)
@@ -19,10 +21,10 @@ pub fn validate(req: Request) -> Response {
 fn validate_session(req: Request) -> Response {
   io.println("running validate_session")
   let result = {
-    use user_id <- result.try(user_session.get_user_id_from_session(req))
+    use #(user_id, is_admin) <- result.try(user_session.get_user_from_session(req))
     io.println("id:" <> int.to_string(user_id))
+    io.println("is_admin:" <> bool.to_string(is_admin))
 
-    let is_admin = auth.is_user_admin(user_id)
 
     Ok(
       json.object([

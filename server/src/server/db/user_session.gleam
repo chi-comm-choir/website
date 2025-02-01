@@ -10,9 +10,9 @@ import server/token.{generate_token}
 import sqlight
 import wisp.{type Request}
 
-pub fn get_user_id_from_session(
+pub fn get_user_from_session(
   req: Request,
-) -> Result(Int, String) {
+) -> Result(#(Int, Bool), String) {
   io.println("getting user id from session")
   let result = {
   use req_session_token <- result.try(
@@ -22,9 +22,10 @@ pub fn get_user_id_from_session(
 
   let session_token_result = case
     select.new()
-    |> select.select(
+    |> select.selects([
       select.col("user_session.id"),
-    )
+      select.col("user_session.is_admin"),
+    ])
     |> select.from_table("user_session")
     |> select.where(where.eq(
       where.col("user_session.token"),
@@ -33,7 +34,7 @@ pub fn get_user_id_from_session(
     |> select.to_query
     |> db.execute_read(
       [sqlight.text(req_session_token)],
-      dynamic.element(0, dynamic.int) // decoder
+      dynamic.tuple2(dynamic.int, dynamic.bool) // decoder
     )
   {
     Ok(users) -> Ok(list.first(users))

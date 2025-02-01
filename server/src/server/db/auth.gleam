@@ -9,13 +9,15 @@ import server/db
 pub type User {
   User(
     id: Int,
+    is_admin: Bool
   )
 }
 
 fn get_user_base_query() {
   select.new()
   |> select.selects([
-    select.col("user_session.id")
+    select.col("user_session.id"),
+    select.col("user_session.is_admin"),
   ])
   |> select.from_table("user_session")
 }
@@ -24,9 +26,11 @@ fn user_db_decoder() {
   fn(data) {
     decode.into({
       use id <- decode.parameter
-      User(id)
+      use is_admin <- decode.parameter
+      User(id, is_admin)
     })
     |> decode.field(0, decode.int)
+    |> decode.field(1, decode.bool)
     |> decode.from(data |> db.list_to_tuple)
   }
 }
@@ -54,14 +58,14 @@ type UserAdmin {
 
 pub fn is_user_admin(user_id: Int) -> Bool {
   let result = select.new()
-  |> select.selects([select.col("user_admin.id"), select.col("user_admin.user_id")])
-  |> select.from_table("user_admin")
-  |> select.where(where.eq(where.col("user_admin.user_id"), where.int(user_id)))
+  |> select.select(select.col("user_session.id"))
+  |> select.from_table("user_session")
+  |> select.where(where.eq(where.col("user_session.id"), where.int(user_id)))
   |> select.to_query
   |> db.execute_read([sqlight.int(user_id)], fn(data) {
     decode.into({
       use id <- decode.parameter
-      use user_id <- decode.parameter
+      use token <- decode.parameter
       UserAdmin(id, user_id)
     })
     |> decode.field(0, decode.int)
