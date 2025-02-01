@@ -39,8 +39,8 @@ pub fn get_user_id_from_session(
     )
   {
     Ok(users) -> Ok(list.first(users))
-    Error(_) -> {
-      Error("Problem getting user_session by token")
+    Error(e) -> {
+      Error("Problem getting user_session by token: " <> e.message)
     }
   }
 
