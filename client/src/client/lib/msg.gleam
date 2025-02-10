@@ -15,7 +15,11 @@ pub type Msg {
   LoginUpdatePassword(value: String)
   LoginUpdateError(value: Option(String))
   RequestLogin
+  RequestLogout
   LoginResponded(
+    resp_result: Result(MessageErrorResponse, lustre_http.HttpError),
+  )
+  LogoutResponded(
     resp_result: Result(MessageErrorResponse, lustre_http.HttpError),
   )
 

@@ -33,11 +33,15 @@ pub fn navbar(model: Model) -> Element(Msg) {
               ui.button([button.solid(), event.on_click(msg.RequestLogin)], [element.text("Login")]),
             ]
             Some(user) -> case user.is_admin {
-              False -> [navbutton("songs", "Songs")]
+              False -> [
+                navbutton("songs", "Songs"),
+                ui.button([button.solid(), event.on_click(msg.RequestLogout)], [element.text("Log out")]),
+              ]
               True -> {[
                 navbutton("songs", "Songs"),
                 html.a([], [element.text(" | ")]),
                 navbutton("create-post", "Create new post"),
+                ui.button([button.solid(), event.on_click(msg.RequestLogout)], [element.text("Log out")]),
               ]}
             }
           }),

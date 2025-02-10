@@ -14,6 +14,7 @@ import server/response
 import server/routes/song
 import server/routes/songs
 import server/routes/auth/login
+import server/routes/auth/logout
 import server/routes/auth/validate
 import server/scaffold
 import server/web
@@ -48,7 +49,7 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
     }
     ["api", "auth", "login"] -> login.login(req)
     ["api", "auth", "validate"] -> validate.validate(req)
-    // ["api", "auth", "logout"] -> logout.logout(req)
+    ["api", "auth", "logout"] -> logout.logout(req)
     _ -> wisp.not_found()
   }
 }

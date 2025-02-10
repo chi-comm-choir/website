@@ -129,6 +129,14 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         )
       }
     }
+    msg.RequestLogout -> #(model, auth.logout(model))
+    msg.LogoutResponded(_) -> #(
+      Model(..model, auth_user: None),
+      effect.batch([
+        modem.push("/", None, None),
+        lib.get_auth_user(),
+      ])
+    )
     msg.CreateSongUpdateTitle(value) -> #(
       Model(..model, create_song_title: value),
       effect.none(),
