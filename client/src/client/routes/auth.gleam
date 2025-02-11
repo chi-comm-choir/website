@@ -15,7 +15,7 @@ pub fn login(model: Model) -> Effect(Msg) {
 
 pub fn logout(_model: Model) -> Effect(Msg) {
   lustre_http.post(
-    "https://dev.chicommunitychoir.com/api/auth/login",
+    "https://dev.chicommunitychoir.com/api/auth/logout",
     json.object([]),
     lustre_http.expect_json(msg.message_error_decoder(), msg.LogoutResponded),
   )
