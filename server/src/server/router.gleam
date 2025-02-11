@@ -40,11 +40,19 @@ pub fn handle_request(req: Request) -> Response {
 
 fn api_routes(req: Request, route_segments: List(String)) -> Response {
   case route_segments {
-    ["api", "songs"] -> songs.songs(req)
+    ["api", "songs"] ->
+      case user_session.get_user_from_session(req) {
+        Ok(_) -> songs.songs(req)
+        Error(_) -> response.error("Unauthorized - please log in")
+      }
     ["api", "songs", song_id] -> {
-      case int.parse(song_id) {
-        Ok(id) -> song.song(req, id)
-        Error(_) -> response.error("Invalid song_id for song, must be int")
+      case user_session.get_user_from_session(req) {
+        Ok(_) -> 
+          case int.parse(song_id) {
+            Ok(id) -> song.song(req, id)
+            Error(_) -> response.error("Invalid song_id for song, must be int")
+          }
+        Error(_) -> response.error("Unauthorized - please log in")
       }
     }
     ["api", "auth", "login"] -> login.login(req)
@@ -54,16 +62,31 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
   }
 }
 
+fn protected_route(
+  req: Request,
+  route: #(route.Route, Int),
+  admin_only: Bool,
+) -> #(route.Route, Int) {
+  case user_session.get_user_from_session(req) {
+    Ok(user) -> case user, admin_only {
+      #(_, 1), True -> route
+      _, False -> route
+      _, True -> #(Index, 401)
+    }
+    Error(_) -> #(Index, 401)
+  }
+}
+
 fn page_routes(req: Request, route_segments: List(String)) -> Response {
   let #(route, response) = case route_segments {
     [] -> #(Index, 200)
     ["about"] -> #(About, 200)
-    ["songs"] -> #(Songs, 200)
+    ["songs"] -> protected_route(req, #(Songs, 200), False)
     // ["auth", "login"] -> #(Login, 200)
-    ["create-song"] -> #(CreateSong, 200)
+    ["create-song"] -> protected_route(req, #(CreateSong, 200), True)
     ["song", song_id] ->
       case int.parse(song_id) {
-        Ok(id) -> #(ShowSong(id), 200)
+        Ok(id) -> protected_route(req, #(ShowSong(id), 200), False)
         Error(_) -> #(NotFound, 404)
       }
     _ -> #(NotFound, 404)
@@ -80,8 +103,8 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       login_password: "",
       login_error: None,
       auth_user: case user_session.get_user_from_session(req) {
-        Ok(#(_, 1)) -> Some(AuthUser(is_admin: False))
-        Ok(#(_, _)) -> Some(AuthUser(is_admin: False))
+        Ok(#(_, 1)) -> Some(AuthUser(is_admin: True))
+        Ok(_) -> Some(AuthUser(is_admin: False))
         Error(_) -> None
       },
       songs: case songs.list_songs(req) {
