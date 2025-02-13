@@ -5,14 +5,12 @@ import gleam/json
 import gleam/result
 import wisp.{type Request, type Response}
 import server/db/user_session
-import gleam/erlang/process.{type Subject}
-import server/routes/cache/session_cache.{type CacheMessage}
 
-pub fn login(req: Request, cache_subject: Subject(CacheMessage)) -> Response {
+pub fn login(req: Request) -> Response {
   use body <- wisp.require_json(req)
 
   case req.method {
-    Post -> do_login(req, body, False, cache_subject)
+    Post -> do_login(req, body, False)
     _ -> wisp.method_not_allowed([Post])
   }
 }
@@ -38,7 +36,7 @@ fn decode_create_user(
   }
 }
 
-fn do_login(req: Request, body: dynamic.Dynamic, is_admin: Bool, cache_subject: Subject(CacheMessage)) -> Response {
+fn do_login(req: Request, body: dynamic.Dynamic, is_admin: Bool) -> Response {
   let result = {
     use user <- result.try(case decode_create_user(body) {
       Ok(val) -> Ok(val)
@@ -50,7 +48,7 @@ fn do_login(req: Request, body: dynamic.Dynamic, is_admin: Bool, cache_subject: 
       return: Error("Passwords do not match"),
     )
 
-    use session_token <- result.try(user_session.create_user_session(is_admin, cache_subject))
+    use session_token <- result.try(user_session.create_user_session(is_admin))
 
     Ok(session_token)
   }

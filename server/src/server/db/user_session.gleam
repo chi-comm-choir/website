@@ -49,7 +49,22 @@ pub fn get_user_from_session(
       dynamic.tuple2(dynamic.int, dynamic.int) // decoder
     )
   {
-    Ok(users) -> Ok(list.first(users))
+    Ok(users) -> {
+      let user_result = list.first(users)
+      case user_result {
+        Ok(user) -> {
+          let #(id, is_admin_int) = user
+          let is_admin = case is_admin_int {
+            0 -> True
+            _ -> False
+          }
+          io.println("Validated user from db, putting in cache.")
+          session_cache.cache_put(cache_subject, req_session_token, id, is_admin)
+        }
+        Error(_) -> io.println("User result was error??")
+      }
+      Ok(user_result)
+    }
     Error(e) -> {
       Error("Problem getting user_session by token: " <> e.message <> " -- with token: " <> req_session_token)
     }
@@ -66,7 +81,7 @@ pub fn get_user_from_session(
   result
 }
 
-pub fn create_user_session(is_admin: Bool, cache_subject: Subject(CacheMessage)) {
+pub fn create_user_session(is_admin: Bool) {
   let token = generate_token(64)
 
   let result =
@@ -76,14 +91,7 @@ pub fn create_user_session(is_admin: Bool, cache_subject: Subject(CacheMessage))
     |> db.execute_write([sqlight.text(token), sqlight.bool(is_admin)])
 
   case result {
-    Ok(ids) -> {
-      case list.first(ids) {
-        Ok(id) -> {
-          io.println("adding user to cache")
-          session_cache.cache_put(cache_subject, token, id, is_admin)
-        }
-        Error(_) -> io.println("warning, no id, cache not written")
-      }
+    Ok(_) -> {
       Ok(token)
     }
     Error(err) -> Error("Creating user session:" <> err.message <> " -- with token: " <> token)
