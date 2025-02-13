@@ -26,7 +26,10 @@ pub fn get_user_from_session(
   )
 
   case session_cache.cache_get(cache_subject, req_session_token) {
-      Some(CacheEntry(id, is_admin, _)) -> Ok(#(id, bool.to_int(is_admin)))
+      Some(CacheEntry(id, is_admin, _)) -> {
+        io.println("Got user from cache")
+        Ok(#(id, bool.to_int(is_admin)))
+      }
       None -> {
 
   let session_token_result = case
@@ -74,6 +77,7 @@ pub fn create_user_session(is_admin: Bool, cache_subject: Subject(CacheMessage))
 
   case result {
     Ok([id]) -> {
+      io.println("adding user to cache")
       session_cache.cache_put(cache_subject, token, id, is_admin)
       Ok(token)
     }
