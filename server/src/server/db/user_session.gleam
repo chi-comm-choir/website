@@ -76,13 +76,14 @@ pub fn create_user_session(is_admin: Bool, cache_subject: Subject(CacheMessage))
     |> db.execute_write([sqlight.text(token), sqlight.bool(is_admin)])
 
   case result {
-    Ok([id]) -> {
-      io.println("adding user to cache")
-      session_cache.cache_put(cache_subject, token, id, is_admin)
-      Ok(token)
-    }
-    Ok(_) -> {
-      io.println("warning, no id, cache not written")
+    Ok(ids) -> {
+      case list.first(ids) {
+        Ok(id) -> {
+          io.println("adding user to cache")
+          session_cache.cache_put(cache_subject, token, id, is_admin)
+        }
+        Error(_) -> io.println("warning, no id, cache not written")
+      }
       Ok(token)
     }
     Error(err) -> Error("Creating user session:" <> err.message <> " -- with token: " <> token)
