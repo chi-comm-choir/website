@@ -53,6 +53,7 @@ pub fn cache_remove(cache: Subject(CacheMessage), token: String) -> Nil {
 }
 
 fn cache_debug_print(cache: Dict(String, CacheEntry)) -> Nil {
+  io.println("PRINTING FULL CACHE\n----------------")
   dict.each(cache, fn(token, entry) {
     let CacheEntry(id, admin, time) = entry
     io.println(
@@ -69,7 +70,10 @@ fn handle_message(
   cache: Dict(String, CacheEntry)
 ) -> actor.Next(CacheMessage, Dict(String, CacheEntry)) {
   io.println("Handling cache message")
-  cache_debug_print(cache)
+  case dict.is_empty(cache) {
+    True -> io.println("Cache is empty")
+    False -> cache_debug_print(cache)
+  }
   case msg {
     Put(token, entry) -> actor.continue(dict.insert(cache, token, entry))
     Get(token, reply_to) -> case dict.get(cache, token) {
