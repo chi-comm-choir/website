@@ -57,7 +57,7 @@ fn api_routes(req: Request, route_segments: List(String), cache_subject: Subject
         Error(_) -> response.error("Unauthorized - please log in")
       }
     }
-    ["api", "auth", "login"] -> login.login(req, cache_subject)
+    ["api", "auth", "login"] -> login.login(req)
     ["api", "auth", "validate"] -> validate.validate(req, cache_subject)
     ["api", "auth", "logout"] -> logout.logout(req, cache_subject)
     _ -> wisp.not_found()
