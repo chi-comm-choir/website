@@ -9,9 +9,14 @@ import server/db
 import server/token.{generate_token}
 import sqlight
 import wisp.{type Request}
+import gleam/erlang/process.{type Subject}
+import server/routes/cache/session_cache.{type CacheMessage, CacheEntry}
+import gleam/option.{Some, None}
+import gleam/bool
 
 pub fn get_user_from_session(
   req: Request,
+  cache_subject: Subject(CacheMessage)
 ) -> Result(#(Int, Int), String) {
   io.println("getting user id from session")
   let result = {
@@ -19,6 +24,13 @@ pub fn get_user_from_session(
     wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found")
   )
+
+  case session_cache.cache_get(cache_subject, req_session_token) {
+      Some(CacheEntry(id, is_admin, _)) -> {
+        io.println("Got user from cache")
+        Ok(#(id, bool.to_int(is_admin)))
+      }
+      None -> {
 
   let session_token_result = case
     select.new()
@@ -49,12 +61,12 @@ pub fn get_user_from_session(
     Error(_) ->
       Error("No user_session found when getting user_session by token")
   }
-  }
+  }}}
   io.println("result: " <> result.unwrap_error(result, "user id obtained from session."))
   result
 }
 
-pub fn create_user_session(is_admin: Bool) {
+pub fn create_user_session(is_admin: Bool, cache_subject: Subject(CacheMessage)) {
   let token = generate_token(64)
 
   let result =
@@ -64,7 +76,15 @@ pub fn create_user_session(is_admin: Bool) {
     |> db.execute_write([sqlight.text(token), sqlight.bool(is_admin)])
 
   case result {
-    Ok(_) -> Ok(token)
+    Ok([id]) -> {
+      io.println("adding user to cache")
+      session_cache.cache_put(cache_subject, token, id, is_admin)
+      Ok(token)
+    }
+    Ok(_) -> {
+      io.println("warning, no id, cache not written")
+      Ok(token)
+    }
     Error(err) -> Error("Creating user session:" <> err.message <> " -- with token: " <> token)
   }
 }
