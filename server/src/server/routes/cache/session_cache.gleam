@@ -7,6 +7,8 @@ import birl.{type Time}
 import birl/duration
 
 import gleam/io
+import gleam/int
+import gleam/bool
 
 pub type CacheEntry {
   CacheEntry(user_id: Int, is_admin: Bool, timestamp: Time)
@@ -50,11 +52,24 @@ pub fn cache_remove(cache: Subject(CacheMessage), token: String) -> Nil {
   actor.send(cache, Remove(token))
 }
 
+fn cache_debug_print(cache: Dict(String, CacheEntry)) -> Nil {
+  dict.each(cache, fn(token, entry) {
+    let CacheEntry(id, admin, time) = entry
+    io.println(
+      "CACHE ENTRY-- TOKEN: " <> token
+      <>"\nID: " <> int.to_string(id)
+      <>"\nIS_ADMIN: " <> bool.to_string(admin)
+      <>"\nTIMESTAMP: " <> birl.to_time_string(time)
+    )
+  })
+}
+
 fn handle_message(
   msg: CacheMessage,
   cache: Dict(String, CacheEntry)
 ) -> actor.Next(CacheMessage, Dict(String, CacheEntry)) {
   io.println("Handling cache message")
+  cache_debug_print(cache)
   case msg {
     Put(token, entry) -> actor.continue(dict.insert(cache, token, entry))
     Get(token, reply_to) -> case dict.get(cache, token) {
