@@ -123,11 +123,11 @@ fn handle_message(
           CacheEntry(_, _, timestamp) -> {
 
             print_entry(token, entry)
-            let diff = birl.difference(timestamp, birl.now())
+            let diff = birl.difference(birl.now(), timestamp)
             |> duration.blur_to(duration.Minute)
             io.println("Diff: " <> int.to_string(diff))
 
-            case birl.difference(timestamp, birl.now()) 
+            case birl.difference(birl.now(), timestamp) 
               |> duration.blur_to(duration.Minute) {
               // TODO: Choose timing
               diff if diff > 1 -> False
