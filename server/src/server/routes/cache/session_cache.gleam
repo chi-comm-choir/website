@@ -33,7 +33,7 @@ pub fn initialize(parent_subject: Subject(Subject(CacheMessage))) {
   process.receive(parent_subject, within: 5000)
 }
 
-pub fn start_cache(
+fn start_cache(
   cache: Dict(String, CacheEntry),
   parent_subject: Subject(Subject(CacheMessage))
 ) -> Result(Subject(CacheMessage), actor.StartError) {
@@ -42,7 +42,11 @@ pub fn start_cache(
       let actor_subject = process.new_subject()
       process.send(parent_subject, actor_subject)
 
-      // start_cleaner(actor_subject)
+      process.start(fn() {
+        process.sleep(10000)
+        start_cleaner(actor_subject)
+        io.println("Cleaner started")
+      }, True)
 
       process.new_selector()
       |> process.selecting(actor_subject, function.identity)
