@@ -30,7 +30,7 @@ pub fn initialize(parent_subject: Subject(Subject(CacheMessage))) {
     max_frequency: 5,
     init: supervisor.add(_, cache),
   ))
-  process.receive(parent_subject, 5000)
+  process.receive(parent_subject, within: 5000)
 }
 
 pub fn start_cache(
@@ -42,7 +42,7 @@ pub fn start_cache(
       let actor_subject = process.new_subject()
       process.send(parent_subject, actor_subject)
 
-      start_cleaner(actor_subject)
+      // start_cleaner(actor_subject)
 
       process.new_selector()
       |> process.selecting(actor_subject, function.identity)
