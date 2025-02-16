@@ -29,11 +29,10 @@ pub fn start_cache(
     init: fn() {
       let actor_subject = process.new_subject()
       process.send(parent_subject, actor_subject)
-      let selector =
-        process.new_selector()
-        |> process.selecting(actor_subject, function.identity)
 
-      actor.Ready(cache, selector)
+      process.new_selector()
+      |> process.selecting(actor_subject, function.identity)
+      |> actor.Ready(cache, _)
     },
     init_timeout: 1000,
     loop: handle_message
@@ -113,21 +112,19 @@ fn handle_message(
   }
 }
 
-pub fn start_cleaner(_input: Nil, parent_subject: Subject(Subject(CacheMessage))) {
-  // actor.start_spec(actor.Spec(
-  //   init: fn() {
-  //     let actor_subject = process.new_subject()
-  //     process.send(parent_subject, actor_subject)
-  //
-  //     let selector =
-  //       process.new_selector()
-  //       |> process.selecting(actor_subject, function.identity)
-  //
-  //     actor.Ready(Nil, selector)
-  //   },
-  //   init_timeout: 1000,
-  //   loop: cleaner
-  // ))
+pub fn start_cleaner(subject: Subject(CacheMessage), parent_subject: Subject(Subject(CacheMessage))) {
+
+  actor.start_spec(actor.Spec(
+    init: fn() {
+      let actor_subject = process.new_subject()
+      process.send(parent_subject, actor_subject)
+      process.new_selector()
+      |> process.selecting(actor_subject, function.identity)
+      |> actor.Ready(subject, _)
+    },
+    init_timeout: 1000,
+    loop: cleaner
+  ))
 
   // process.start(
   //   fn() {
@@ -136,10 +133,13 @@ pub fn start_cleaner(_input: Nil, parent_subject: Subject(Subject(CacheMessage))
   //   },
   //   True
   // )
+
 }
 
-fn cleaner(_input: Nil, cache: Subject(CacheMessage)) {
-  process.sleep(60_000)
+fn cleaner(_subject: CacheMessage, cache: Subject(CacheMessage)) {
+  // process.sleep(60_000)
+  process.sleep(5_000)
+  io.println("cleaner running")
   actor.send(cache, Clean)
   actor.continue(cache)
 }
