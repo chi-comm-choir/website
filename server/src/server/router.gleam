@@ -8,7 +8,6 @@ import gleam/http
 import gleam/int
 import gleam/option.{None, Some}
 import lustre/element
-import server/db/auth
 import server/db/user_session
 import server/response
 import server/routes/song

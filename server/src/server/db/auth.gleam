@@ -65,7 +65,7 @@ pub fn is_user_admin(user_id: Int) -> Bool {
   |> db.execute_read([sqlight.int(user_id)], fn(data) {
     decode.into({
       use id <- decode.parameter
-      use token <- decode.parameter
+      use _token <- decode.parameter
       UserAdmin(id, user_id)
     })
     |> decode.field(0, decode.int)

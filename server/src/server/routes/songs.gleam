@@ -78,7 +78,7 @@ fn decode_create_song(json: Dynamic) -> Result(CreateSong, dynamic.DecodeErrors)
   decoder(json)
 }
 
-fn insert_song_to_db(req: Request, song: CreateSong) {
+fn insert_song_to_db(_req: Request, song: CreateSong) {
   let _ =
     [
       insert.row([
