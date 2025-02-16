@@ -2,7 +2,6 @@ import gleam/json
 import wisp.{type Request, type Response}
 import gleam/erlang/process.{type Subject}
 import server/routes/cache/session_cache.{type CacheMessage}
-import gleam/result
 
 pub fn logout(req: Request, cache_subject: Subject(CacheMessage)) -> Response {
 

@@ -1,6 +1,5 @@
 import argv
 import gleam/erlang/process
-import gleam/otp/supervisor
 import gleam/int
 import mist
 import server/router
@@ -8,7 +7,6 @@ import server/db
 import wisp
 import wisp/wisp_mist
 import server/routes/cache/session_cache
-import gleam/dict
 
 pub fn main() {
   wisp.configure_logger()

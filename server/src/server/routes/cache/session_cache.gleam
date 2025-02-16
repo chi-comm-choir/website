@@ -69,9 +69,6 @@ pub fn cache_remove(cache: Subject(CacheMessage), token: String) -> Nil {
   actor.send(cache, Remove(token))
 }
 
-// fn update_entry_timestamp(cache: Dict(String, CacheEntry), token: String) -> Dict(String, CacheEntry) {
-// }
-
 fn cache_debug_print(cache: Dict(String, CacheEntry)) -> Nil {
   io.println("PRINTING FULL CACHE\n----------------")
   dict.each(cache, print_entry)
@@ -91,19 +88,18 @@ fn handle_message(
   msg: CacheMessage,
   cache: Dict(String, CacheEntry)
 ) -> actor.Next(CacheMessage, Dict(String, CacheEntry)) {
-  io.println("Handling cache message")
-  case dict.is_empty(cache) {
-    True -> io.println("Cache is empty")
-    False -> cache_debug_print(cache)
-  }
+  // io.println("Handling cache message")
+  // case dict.is_empty(cache) {
+  //   True -> io.println("Cache is empty")
+  //   False -> cache_debug_print(cache)
+  // }
   case msg {
     Put(token, entry) -> {
-      io.println("--Inserting entry into cache--")
+      io.println("Inserting entry into cache:")
       print_entry(token, entry)
       actor.continue(dict.insert(cache, token, entry))
     }
     Get(token, reply_to) -> case dict.get(cache, token) {
-      // TODO: Update timestamps of entries that are referenced to keep them fresh from cleaning
       Ok(entry) -> {
         let CacheEntry(id, is_admin, _) = entry
         io.println("Got user id from cache: " <> int.to_string(id))
@@ -123,15 +119,14 @@ fn handle_message(
     }
     Clean -> {
       io.println("Cleaning cache!")
-      actor.continue(dict.filter(cache, fn(token, entry) {
+      actor.continue(dict.filter(cache, fn(_token, entry) {
         case entry {
-          CacheEntry(_, _, timestamp) -> {
+          CacheEntry(id, _, timestamp) -> {
             case birl.difference(birl.now(), timestamp) 
               |> duration.blur_to(duration.Minute) {
               diff if diff >= 5 -> {
-                io.println("Removing id from cache via cleaner. Token: " <> token)
-                io.println("Timestamp: " <> birl.to_time_string(timestamp) <> " Now: " <> birl.to_time_string(birl.now()))
-                io.println("Difference: " <> int.to_string(diff))
+                io.println("Removing entry from cache via cleaner. Id: " <> int.to_string(id))
+                io.println("Age: " <> int.to_string(diff) <> " minutes")
                 False
               }
               _ -> True
@@ -147,9 +142,9 @@ fn start_cleaner(cache_subject: Subject(CacheMessage)) {
   process.start(cleaner(cache_subject), True)
 }
 
+/// Sends `Clean` message to cache every 60 seconds.
 fn cleaner(cache_subject: Subject(CacheMessage)) {
   process.sleep(60_000)
-  io.println("do_cleaner")
   actor.send(cache_subject, Clean)
   cleaner(cache_subject)
 }
