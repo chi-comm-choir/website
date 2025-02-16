@@ -118,13 +118,21 @@ fn handle_message(
     }
     Clean -> {
       io.println("Cleaning cache!")
-      actor.continue(dict.filter(cache, fn(_token, entry) {
+      actor.continue(dict.filter(cache, fn(token, entry) {
         case entry {
-          CacheEntry(_, _, timestamp) -> case birl.difference(timestamp, birl.now()) |> duration.blur_to(duration.Minute) {
-            // TODO: Choose timing
-            // diff if diff > 5 -> False
-            diff if diff > 1 -> False
-            _ -> True
+          CacheEntry(_, _, timestamp) -> {
+
+            print_entry(token, entry)
+            let diff = birl.difference(timestamp, birl.now())
+            |> duration.blur_to(duration.Minute)
+            io.println("Diff: " <> int.to_string(diff))
+
+            case birl.difference(timestamp, birl.now()) 
+              |> duration.blur_to(duration.Minute) {
+              // TODO: Choose timing
+              diff if diff > 1 -> False
+              _ -> True
+            }
           }
         }
       }))
