@@ -6,6 +6,7 @@ import server/router
 import server/db
 import wisp
 import wisp/wisp_mist
+import server/routes/cache/session_cache
 
 pub fn main() {
   wisp.configure_logger()
@@ -17,11 +18,14 @@ pub fn main() {
     _ -> #("127.0.0.1", Ok(8080))
   }
 
+  let assert Ok(cache_subject) = process.new_subject()
+  |> session_cache.initialize
+
   let _ = db.init()
 
   let secret_key_base = "serversnateiostneiarntsieonatieosntanrsietnearntiesnraieontsor"
   let assert Ok(_) =
-    router.handle_request
+    router.handle_request(_, cache_subject)
     |> wisp_mist.handler(secret_key_base)
     |> mist.new
     |> mist.bind(host)

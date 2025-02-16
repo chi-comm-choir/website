@@ -8,7 +8,6 @@ import gleam/http
 import gleam/int
 import gleam/option.{None, Some}
 import lustre/element
-import server/db/auth
 import server/db/user_session
 import server/response
 import server/routes/song
@@ -20,8 +19,10 @@ import server/scaffold
 import server/web
 import shared.{AuthUser}
 import wisp.{type Request, type Response}
+import server/routes/cache/session_cache.{type CacheMessage}
+import gleam/erlang/process.{type Subject}
 
-pub fn handle_request(req: Request) -> Response {
+pub fn handle_request(req: Request, cache_subject: Subject(CacheMessage)) -> Response {
   use req <- web.middleware(req)
   use req <- cors.wisp_middleware(
     req,
@@ -33,20 +34,20 @@ pub fn handle_request(req: Request) -> Response {
   )
 
   case wisp.path_segments(req) {
-    ["api", ..] -> api_routes(req, wisp.path_segments(req))
-    ps -> page_routes(req, ps)
+    ["api", ..] -> api_routes(req, wisp.path_segments(req), cache_subject)
+    ps -> page_routes(req, ps, cache_subject)
   }
 }
 
-fn api_routes(req: Request, route_segments: List(String)) -> Response {
+fn api_routes(req: Request, route_segments: List(String), cache_subject: Subject(CacheMessage)) -> Response {
   case route_segments {
     ["api", "songs"] ->
-      case user_session.get_user_from_session(req) {
+      case user_session.get_user_from_session(req, cache_subject) {
         Ok(_) -> songs.songs(req)
         Error(_) -> response.error("Unauthorized - please log in")
       }
     ["api", "songs", song_id] -> {
-      case user_session.get_user_from_session(req) {
+      case user_session.get_user_from_session(req, cache_subject) {
         Ok(_) -> 
           case int.parse(song_id) {
             Ok(id) -> song.song(req, id)
@@ -56,8 +57,8 @@ fn api_routes(req: Request, route_segments: List(String)) -> Response {
       }
     }
     ["api", "auth", "login"] -> login.login(req)
-    ["api", "auth", "validate"] -> validate.validate(req)
-    ["api", "auth", "logout"] -> logout.logout(req)
+    ["api", "auth", "validate"] -> validate.validate(req, cache_subject)
+    ["api", "auth", "logout"] -> logout.logout(req, cache_subject)
     _ -> wisp.not_found()
   }
 }
@@ -66,8 +67,9 @@ fn protected_route(
   req: Request,
   route: #(route.Route, Int),
   admin_only: Bool,
+  cache_subject: Subject(CacheMessage),
 ) -> #(route.Route, Int) {
-  case user_session.get_user_from_session(req) {
+  case user_session.get_user_from_session(req, cache_subject) {
     Ok(user) -> case user, admin_only {
       #(_, 1), True -> route
       _, False -> route
@@ -77,16 +79,16 @@ fn protected_route(
   }
 }
 
-fn page_routes(req: Request, route_segments: List(String)) -> Response {
+fn page_routes(req: Request, route_segments: List(String), cache_subject: Subject(CacheMessage)) -> Response {
   let #(route, response) = case route_segments {
     [] -> #(Index, 200)
     ["about"] -> #(About, 200)
-    ["songs"] -> protected_route(req, #(Songs, 200), False)
+    ["songs"] -> protected_route(req, #(Songs, 200), False, cache_subject)
     // ["auth", "login"] -> #(Login, 200)
-    ["create-song"] -> protected_route(req, #(CreateSong, 200), True)
+    ["create-song"] -> protected_route(req, #(CreateSong, 200), True, cache_subject)
     ["song", song_id] ->
       case int.parse(song_id) {
-        Ok(id) -> protected_route(req, #(ShowSong(id), 200), False)
+        Ok(id) -> protected_route(req, #(ShowSong(id), 200), False, cache_subject)
         Error(_) -> #(NotFound, 404)
       }
     _ -> #(NotFound, 404)
@@ -102,7 +104,7 @@ fn page_routes(req: Request, route_segments: List(String)) -> Response {
       create_song_error: None,
       login_password: "",
       login_error: None,
-      auth_user: case user_session.get_user_from_session(req) {
+      auth_user: case user_session.get_user_from_session(req, cache_subject) {
         Ok(#(_, 1)) -> Some(AuthUser(is_admin: True))
         Ok(_) -> Some(AuthUser(is_admin: False))
         Error(_) -> None

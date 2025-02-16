@@ -9,9 +9,14 @@ import server/db
 import server/token.{generate_token}
 import sqlight
 import wisp.{type Request}
+import gleam/erlang/process.{type Subject}
+import server/routes/cache/session_cache.{type CacheMessage, CacheEntry}
+import gleam/option.{Some, None}
+import gleam/bool
 
 pub fn get_user_from_session(
   req: Request,
+  cache_subject: Subject(CacheMessage)
 ) -> Result(#(Int, Int), String) {
   io.println("getting user id from session")
   let result = {
@@ -19,6 +24,13 @@ pub fn get_user_from_session(
     wisp.get_cookie(req, "lf_session_token", wisp.PlainText)
     |> result.replace_error("No session cookie found")
   )
+
+  case session_cache.cache_get(cache_subject, req_session_token) {
+      Some(CacheEntry(id, is_admin, _)) -> {
+        io.println("Got user from cache")
+        Ok(#(id, bool.to_int(is_admin)))
+      }
+      None -> {
 
   let session_token_result = case
     select.new()
@@ -37,7 +49,22 @@ pub fn get_user_from_session(
       dynamic.tuple2(dynamic.int, dynamic.int) // decoder
     )
   {
-    Ok(users) -> Ok(list.first(users))
+    Ok(users) -> {
+      let user_result = list.first(users)
+      case user_result {
+        Ok(user) -> {
+          let #(id, is_admin_int) = user
+          let is_admin = case is_admin_int {
+            0 -> True
+            _ -> False
+          }
+          io.println("Validated user from db, putting in cache.")
+          session_cache.cache_put(cache_subject, req_session_token, id, is_admin)
+        }
+        Error(_) -> io.println("User result was error??")
+      }
+      Ok(user_result)
+    }
     Error(e) -> {
       Error("Problem getting user_session by token: " <> e.message <> " -- with token: " <> req_session_token)
     }
@@ -49,7 +76,7 @@ pub fn get_user_from_session(
     Error(_) ->
       Error("No user_session found when getting user_session by token")
   }
-  }
+  }}}
   io.println("result: " <> result.unwrap_error(result, "user id obtained from session."))
   result
 }
@@ -64,7 +91,9 @@ pub fn create_user_session(is_admin: Bool) {
     |> db.execute_write([sqlight.text(token), sqlight.bool(is_admin)])
 
   case result {
-    Ok(_) -> Ok(token)
+    Ok(_) -> {
+      Ok(token)
+    }
     Error(err) -> Error("Creating user session:" <> err.message <> " -- with token: " <> token)
   }
 }
