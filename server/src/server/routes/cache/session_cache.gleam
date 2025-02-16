@@ -1,6 +1,7 @@
 import gleam/erlang/process.{type Subject}
 import gleam/function
 import gleam/otp/actor
+import gleam/otp/supervisor
 import gleam/option.{type Option, Some, None}
 import gleam/dict.{type Dict}
 import birl.{type Time}
@@ -21,7 +22,18 @@ pub type CacheMessage {
   Clean
 }
 
-pub fn start_cache(
+pub fn initialize(parent_subject: Subject(Subject(CacheMessage))) {
+  let cache = supervisor.supervisor(start_cache(_, parent_subject))
+  let assert Ok(_supervisor_subject) = supervisor.start_spec(supervisor.Spec(
+    argument: dict.new(),
+    frequency_period: 1,
+    max_frequency: 5,
+    init: supervisor.add(_, cache),
+  ))
+  process.receive(parent_subject, within: 5000)
+}
+
+fn start_cache(
   cache: Dict(String, CacheEntry),
   parent_subject: Subject(Subject(CacheMessage))
 ) -> Result(Subject(CacheMessage), actor.StartError) {
@@ -29,13 +41,18 @@ pub fn start_cache(
     init: fn() {
       let actor_subject = process.new_subject()
       process.send(parent_subject, actor_subject)
-      let selector =
-        process.new_selector()
-        |> process.selecting(actor_subject, function.identity)
 
-      actor.Ready(cache, selector)
+      process.start(fn() {
+        process.sleep(10000)
+        start_cleaner(actor_subject)
+        io.println("Cleaner started")
+      }, True)
+
+      process.new_selector()
+      |> process.selecting(actor_subject, function.identity)
+      |> actor.Ready(cache, _)
     },
-    init_timeout: 1000,
+    init_timeout: 2000,
     loop: handle_message
   ))
 }
@@ -101,11 +118,21 @@ fn handle_message(
     }
     Clean -> {
       io.println("Cleaning cache!")
-      actor.continue(dict.filter(cache, fn(_token, entry) {
+      actor.continue(dict.filter(cache, fn(token, entry) {
         case entry {
-          CacheEntry(_, _, timestamp) -> case birl.difference(timestamp, birl.now()) |> duration.blur_to(duration.Minute) {
-            diff if diff > 5 -> False
-            _ -> True
+          CacheEntry(_, _, timestamp) -> {
+
+            print_entry(token, entry)
+            let diff = birl.difference(birl.now(), timestamp)
+            |> duration.blur_to(duration.Minute)
+            io.println("Diff: " <> int.to_string(diff))
+
+            case birl.difference(birl.now(), timestamp) 
+              |> duration.blur_to(duration.Minute) {
+              // TODO: Choose timing
+              diff if diff > 1 -> False
+              _ -> True
+            }
           }
         }
       }))
@@ -113,33 +140,14 @@ fn handle_message(
   }
 }
 
-pub fn start_cleaner(_input: Nil, parent_subject: Subject(Subject(CacheMessage))) {
-  // actor.start_spec(actor.Spec(
-  //   init: fn() {
-  //     let actor_subject = process.new_subject()
-  //     process.send(parent_subject, actor_subject)
-  //
-  //     let selector =
-  //       process.new_selector()
-  //       |> process.selecting(actor_subject, function.identity)
-  //
-  //     actor.Ready(Nil, selector)
-  //   },
-  //   init_timeout: 1000,
-  //   loop: cleaner
-  // ))
-
-  // process.start(
-  //   fn() {
-  //     process.sleep(60_000)
-  //     actor.send(cache, Clean)
-  //   },
-  //   True
-  // )
+fn start_cleaner(cache_subject: Subject(CacheMessage)) {
+  process.start(cleaner(cache_subject), True)
 }
 
-fn cleaner(_input: Nil, cache: Subject(CacheMessage)) {
-  process.sleep(60_000)
-  actor.send(cache, Clean)
-  actor.continue(cache)
+fn cleaner(cache_subject: Subject(CacheMessage)) {
+  // TODO: Choose interval
+  process.sleep(5_000)
+  io.println("do_cleaner")
+  actor.send(cache_subject, Clean)
+  cleaner(cache_subject)
 }
