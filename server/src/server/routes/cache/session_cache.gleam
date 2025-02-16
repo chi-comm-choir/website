@@ -30,7 +30,7 @@ pub fn initialize(parent_subject: Subject(Subject(CacheMessage))) {
     max_frequency: 5,
     init: supervisor.add(_, cache),
   ))
-  process.receive(parent_subject, 1000)
+  process.receive(parent_subject, 5000)
 }
 
 pub fn start_cache(
@@ -48,7 +48,7 @@ pub fn start_cache(
       |> process.selecting(actor_subject, function.identity)
       |> actor.Ready(cache, _)
     },
-    init_timeout: 1000,
+    init_timeout: 2000,
     loop: handle_message
   ))
 }
