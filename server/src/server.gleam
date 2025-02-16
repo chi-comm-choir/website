@@ -20,24 +20,9 @@ pub fn main() {
     _ -> #("127.0.0.1", Ok(8080))
   }
 
-  let parent_subject = process.new_subject()
-  let cache = supervisor.supervisor(session_cache.start_cache(_, parent_subject))
-  let assert Ok(_supervisor_subject) = supervisor.start_spec(supervisor.Spec(
-    argument: dict.new(),
-    frequency_period: 1,
-    max_frequency: 5,
-    init: supervisor.add(_, cache),
-  ))
-  let assert Ok(cache_subject) = process.receive(parent_subject, 1000)
+  let assert Ok(cache_subject) = process.new_subject()
+  |> session_cache.initialize
 
-  let cache_cleaner = supervisor.worker(session_cache.start_cleaner(_, parent_subject))
-  // let assert Ok(_supervisor_subject) = supervisor.start(supervisor.add(_, cache_cleaner))
-  let assert Ok(_supervisor_subject) = supervisor.start_spec(supervisor.Spec(
-    argument: cache_subject,
-    frequency_period: 1,
-    max_frequency: 5,
-    init: supervisor.add(_, cache_cleaner)
-  ))
   let _ = db.init()
 
   let secret_key_base = "serversnateiostneiarntsieonatieosntanrsietnearntiesnraieontsor"

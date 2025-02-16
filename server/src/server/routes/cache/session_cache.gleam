@@ -1,6 +1,7 @@
 import gleam/erlang/process.{type Subject}
 import gleam/function
 import gleam/otp/actor
+import gleam/otp/supervisor
 import gleam/option.{type Option, Some, None}
 import gleam/dict.{type Dict}
 import birl.{type Time}
@@ -21,6 +22,17 @@ pub type CacheMessage {
   Clean
 }
 
+pub fn initialize(parent_subject: Subject(Subject(CacheMessage))) {
+  let cache = supervisor.supervisor(start_cache(_, parent_subject))
+  let assert Ok(_supervisor_subject) = supervisor.start_spec(supervisor.Spec(
+    argument: dict.new(),
+    frequency_period: 1,
+    max_frequency: 5,
+    init: supervisor.add(_, cache),
+  ))
+  process.receive(parent_subject, 1000)
+}
+
 pub fn start_cache(
   cache: Dict(String, CacheEntry),
   parent_subject: Subject(Subject(CacheMessage))
@@ -29,6 +41,8 @@ pub fn start_cache(
     init: fn() {
       let actor_subject = process.new_subject()
       process.send(parent_subject, actor_subject)
+
+      start_cleaner(actor_subject)
 
       process.new_selector()
       |> process.selecting(actor_subject, function.identity)
@@ -103,7 +117,9 @@ fn handle_message(
       actor.continue(dict.filter(cache, fn(_token, entry) {
         case entry {
           CacheEntry(_, _, timestamp) -> case birl.difference(timestamp, birl.now()) |> duration.blur_to(duration.Minute) {
-            diff if diff > 5 -> False
+            // TODO: Choose timing
+            // diff if diff > 5 -> False
+            diff if diff > 1 -> False
             _ -> True
           }
         }
@@ -112,34 +128,14 @@ fn handle_message(
   }
 }
 
-pub fn start_cleaner(subject: Subject(CacheMessage), parent_subject: Subject(Subject(CacheMessage))) {
-
-  actor.start_spec(actor.Spec(
-    init: fn() {
-      let actor_subject = process.new_subject()
-      process.send(parent_subject, actor_subject)
-      process.new_selector()
-      |> process.selecting(actor_subject, function.identity)
-      |> actor.Ready(subject, _)
-    },
-    init_timeout: 1000,
-    loop: cleaner
-  ))
-
-  // process.start(
-  //   fn() {
-  //     process.sleep(60_000)
-  //     actor.send(cache, Clean)
-  //   },
-  //   True
-  // )
-
+fn start_cleaner(cache_subject: Subject(CacheMessage)) {
+  process.start(cleaner(cache_subject), True)
 }
 
-fn cleaner(_subject: CacheMessage, cache: Subject(CacheMessage)) {
-  // process.sleep(60_000)
+fn cleaner(cache_subject: Subject(CacheMessage)) {
+  // TODO: Choose interval
   process.sleep(5_000)
-  io.println("cleaner running")
-  actor.send(cache, Clean)
-  actor.continue(cache)
+  io.println("do_cleaner")
+  actor.send(cache_subject, Clean)
+  cleaner(cache_subject)
 }
