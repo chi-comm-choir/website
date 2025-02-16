@@ -45,7 +45,7 @@ fn start_cache(
       process.start(fn() {
         process.sleep(10000)
         start_cleaner(actor_subject)
-        io.println("Cleaner started")
+        io.println("Cache cleaner started")
       }, True)
 
       process.new_selector()
@@ -68,6 +68,9 @@ pub fn cache_get(cache: Subject(CacheMessage), token: String) -> Option(CacheEnt
 pub fn cache_remove(cache: Subject(CacheMessage), token: String) -> Nil {
   actor.send(cache, Remove(token))
 }
+
+// fn update_entry_timestamp(cache: Dict(String, CacheEntry), token: String) -> Dict(String, CacheEntry) {
+// }
 
 fn cache_debug_print(cache: Dict(String, CacheEntry)) -> Nil {
   io.println("PRINTING FULL CACHE\n----------------")
@@ -100,11 +103,13 @@ fn handle_message(
       actor.continue(dict.insert(cache, token, entry))
     }
     Get(token, reply_to) -> case dict.get(cache, token) {
+      // TODO: Update timestamps of entries that are referenced to keep them fresh from cleaning
       Ok(entry) -> {
-        let CacheEntry(id, _, _) = entry
+        let CacheEntry(id, is_admin, _) = entry
         io.println("Got user id from cache: " <> int.to_string(id))
-        process.send(reply_to, Some(entry))
-        actor.continue(cache)
+        let updated_entry = CacheEntry(id, is_admin, birl.now())
+        process.send(reply_to, Some(updated_entry))
+        actor.continue(dict.insert(cache, token, updated_entry))
       }
       Error(_) -> {
         io.println("No associated user id found in cache")
@@ -121,16 +126,14 @@ fn handle_message(
       actor.continue(dict.filter(cache, fn(token, entry) {
         case entry {
           CacheEntry(_, _, timestamp) -> {
-
-            print_entry(token, entry)
-            let diff = birl.difference(birl.now(), timestamp)
-            |> duration.blur_to(duration.Minute)
-            io.println("Diff: " <> int.to_string(diff))
-
             case birl.difference(birl.now(), timestamp) 
               |> duration.blur_to(duration.Minute) {
-              // TODO: Choose timing
-              diff if diff > 1 -> False
+              diff if diff >= 5 -> {
+                io.println("Removing id from cache via cleaner. Token: " <> token)
+                io.println("Timestamp: " <> birl.to_time_string(timestamp) <> " Now: " <> birl.to_time_string(birl.now()))
+                io.println("Difference: " <> int.to_string(diff))
+                False
+              }
               _ -> True
             }
           }
@@ -145,8 +148,7 @@ fn start_cleaner(cache_subject: Subject(CacheMessage)) {
 }
 
 fn cleaner(cache_subject: Subject(CacheMessage)) {
-  // TODO: Choose interval
-  process.sleep(5_000)
+  process.sleep(60_000)
   io.println("do_cleaner")
   actor.send(cache_subject, Clean)
   cleaner(cache_subject)
