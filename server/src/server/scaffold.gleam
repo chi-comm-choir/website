@@ -43,21 +43,17 @@ pub fn page_scaffold(content: element.Element(a)) {
       // WARN: Minify when deploying to prod
       script([src("/static/client.mjs"), attribute.type_("module")], ""),
       // TODO: Custom CSS
-      // link([href("/static/client.min.css"), rel("stylesheet")]),
-      // TODO: Custom JS
-      // script(
-      //   [
-      //     src("https://lustre_fullstack.example/js/script.js"),
-      //     attribute("data-domain", "lustre_fullstack.example"),
-      //     attribute("defer", ""),
-      //   ],
-      //   "",
-      // ),
+    // link([href("/static/client.min.css"), rel("stylesheet")]),
+    // TODO: Custom JS
+    // script(
+    //   [
+    //     src("https://lustre_fullstack.example/js/script.js"),
+    //     attribute("data-domain", "lustre_fullstack.example"),
+    //     attribute("defer", ""),
+    //   ],
+    //   "",
+    // ),
     ]),
-    html.body([], [
-      html.div([attribute.id("app")], [
-        content,
-      ])
-    ])
+    html.body([], [html.div([attribute.id("app")], [content])]),
   ])
 }

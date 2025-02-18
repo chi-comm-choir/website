@@ -37,14 +37,14 @@ fn init(_) -> #(Model, Effect(Msg)) {
       songs: [],
       show_song: None,
     )
-  let effect = effect.batch(
+  let effect =
+    effect.batch(
       [lib.get_auth_user()]
       |> list.append(case lib.get_route() {
         // ShowSong(_) -> [get_show_song()]
         _ -> []
-      }
-    ),
-  )
+      }),
+    )
   #(model, effect)
 }
 
@@ -66,10 +66,14 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         _ -> effect.none()
       },
     )
-    msg.AuthUserReceived(auth_user_result) -> case auth_user_result {
-      Ok(auth_user) -> #(Model(..model, auth_user: Some(auth_user)), effect.none())
-      Error(_) -> #(model, effect.none())
-    }
+    msg.AuthUserReceived(auth_user_result) ->
+      case auth_user_result {
+        Ok(auth_user) -> #(
+          Model(..model, auth_user: Some(auth_user)),
+          effect.none(),
+        )
+        Error(_) -> #(model, effect.none())
+      }
     msg.SongsReceived(get_songs_result) -> {
       case get_songs_result {
         Ok(get_songs) -> #(
@@ -96,17 +100,16 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       Model(..model, login_error: value),
       effect.none(),
     )
-    msg.RequestLogin -> #(
-      model,
-      auth.login(model),
-    )
+    msg.RequestLogin -> #(model, auth.login(model))
     msg.LoginResponded(resp_result) -> {
       case resp_result {
         Ok(resp) -> {
           case resp.error {
             Some(err) -> #(
               model,
-              effect.from(fn(dispatch) { dispatch(msg.LoginUpdateError(Some(err))) })
+              effect.from(fn(dispatch) {
+                dispatch(msg.LoginUpdateError(Some(err)))
+              }),
             )
             None -> #(
               Model(
@@ -125,17 +128,16 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         }
         Error(_) -> #(
           model,
-          effect.from(fn(dispatch) { dispatch(msg.LoginUpdateError(Some("HTTP error"))) })
+          effect.from(fn(dispatch) {
+            dispatch(msg.LoginUpdateError(Some("HTTP error")))
+          }),
         )
       }
     }
     msg.RequestLogout -> #(model, auth.logout(model))
     msg.LogoutResponded(_) -> #(
       Model(..model, auth_user: None),
-      effect.batch([
-        modem.push("/", None, None),
-        lib.get_auth_user(),
-      ])
+      effect.batch([modem.push("/", None, None), lib.get_auth_user()]),
     )
     msg.CreateSongUpdateTitle(value) -> #(
       Model(..model, create_song_title: value),

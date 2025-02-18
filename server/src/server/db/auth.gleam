@@ -1,16 +1,13 @@
 import cake/select
 import cake/where
-import decode
+import gleam/dynamic/decode
 import gleam/list
 import gleam/result
-import sqlight
 import server/db
+import sqlight
 
 pub type User {
-  User(
-    id: Int,
-    is_admin: Bool
-  )
+  User(id: Int, is_admin: Bool)
 }
 
 fn get_user_base_query() {
@@ -23,23 +20,17 @@ fn get_user_base_query() {
 }
 
 fn user_db_decoder() {
-  fn(data) {
-    decode.into({
-      use id <- decode.parameter
-      use is_admin <- decode.parameter
-      User(id, is_admin)
-    })
-    |> decode.field(0, decode.int)
-    |> decode.field(1, decode.bool)
-    |> decode.from(data |> db.list_to_tuple)
-  }
+    use id <- decode.field(0, decode.int)
+    use is_admin <- decode.field(1, decode.bool)
+    decode.success(User(id, is_admin))
 }
 
 pub fn get_user_by_id(user_id: Int) -> Result(User, String) {
-  let user = case get_user_base_query()
-  |> select.where(where.eq(where.col("user_session.id"), where.int(user_id)))
-  |> select.to_query
-  |> db.execute_read([sqlight.int(user_id)], user_db_decoder())
+  let user = case
+    get_user_base_query()
+    |> select.where(where.eq(where.col("user_session.id"), where.int(user_id)))
+    |> select.to_query
+    |> db.execute_read([sqlight.int(user_id)], user_db_decoder())
   {
     Ok(users) -> Ok(list.first(users))
     Error(e) -> Error("Problem getting user_session by id: " <> e.message)
@@ -57,21 +48,19 @@ type UserAdmin {
 }
 
 pub fn is_user_admin(user_id: Int) -> Bool {
-  let result = select.new()
-  |> select.select(select.col("user_session.id"))
-  |> select.from_table("user_session")
-  |> select.where(where.eq(where.col("user_session.id"), where.int(user_id)))
-  |> select.to_query
-  |> db.execute_read([sqlight.int(user_id)], fn(data) {
-    decode.into({
-      use id <- decode.parameter
-      use _token <- decode.parameter
-      UserAdmin(id, user_id)
-    })
-    |> decode.field(0, decode.int)
-    |> decode.field(1, decode.int)
-    |> decode.from(data)
-  })
+  let result =
+    select.new()
+    |> select.select(select.col("user_session.id"))
+    |> select.from_table("user_session")
+    |> select.where(where.eq(where.col("user_session.id"), where.int(user_id)))
+    |> select.to_query
+    |> db.execute_read([sqlight.int(user_id)],
+      {
+      use id <- decode.field(0, decode.int)
+      use _token <- decode.field(1, decode.int)
+      decode.success(UserAdmin(id, user_id))
+      }
+    )
 
   case result {
     Ok(result) -> {
