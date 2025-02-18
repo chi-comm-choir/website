@@ -30,22 +30,33 @@ pub fn navbar(model: Model) -> Element(Msg) {
             None -> [
               // TODO: msg.RequestLogin event on enter
               ui.input([event.on_input(msg.LoginUpdatePassword)]),
-              ui.button([button.solid(), event.on_click(msg.RequestLogin)], [element.text("Login")]),
+              ui.button([button.solid(), event.on_click(msg.RequestLogin)], [
+                element.text("Login"),
+              ]),
             ]
-            Some(user) -> case user.is_admin {
-              False -> [
-                navbutton("songs", "Songs"),
-                html.a([], [element.text(" | ")]),
-                ui.button([button.solid(), event.on_click(msg.RequestLogout)], [element.text("Log out")]),
-              ]
-              True -> {[
-                navbutton("songs", "Songs"),
-                html.a([], [element.text(" | ")]),
-                navbutton("create-post", "Create new post"),
-                html.a([], [element.text(" | ")]),
-                ui.button([button.solid(), event.on_click(msg.RequestLogout)], [element.text("Log out")]),
-              ]}
-            }
+            Some(user) ->
+              case user.is_admin {
+                False -> [
+                  navbutton("songs", "Songs"),
+                  html.a([], [element.text(" | ")]),
+                  ui.button(
+                    [button.solid(), event.on_click(msg.RequestLogout)],
+                    [element.text("Log out")],
+                  ),
+                ]
+                True -> {
+                  [
+                    navbutton("songs", "Songs"),
+                    html.a([], [element.text(" | ")]),
+                    navbutton("create-post", "Create new post"),
+                    html.a([], [element.text(" | ")]),
+                    ui.button(
+                      [button.solid(), event.on_click(msg.RequestLogout)],
+                      [element.text("Log out")],
+                    ),
+                  ]
+                }
+              }
           }),
       ),
       html.hr([attribute.style([#("opacity", "0")])]),

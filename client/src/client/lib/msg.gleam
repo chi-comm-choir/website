@@ -1,8 +1,8 @@
 import client/lib/route.{type Route}
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/option.{type Option}
 import lustre_http
-import shared.{type Song, Song, type AuthUser}
+import shared.{type AuthUser, type Song, Song}
 
 pub type Msg {
   OnRouteChange(Route)
@@ -42,9 +42,7 @@ pub type MessageErrorResponse {
 }
 
 pub fn message_error_decoder() {
-  dynamic.decode2(
-    MessageErrorResponse,
-    dynamic.optional_field("message", dynamic.string),
-    dynamic.optional_field("error", dynamic.string),
-  )
+  use message <- decode.field("message", decode.optional(decode.string))
+  use error <- decode.field("error", decode.optional(decode.string))
+  decode.success(MessageErrorResponse(message: message, error: error))
 }

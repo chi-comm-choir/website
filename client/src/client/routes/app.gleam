@@ -1,13 +1,11 @@
 import client/components/navbar
 import client/lib/model.{type Model}
 import client/lib/msg.{type Msg}
-import client/lib/route.{
-  About, CreateSong, Index, NotFound, ShowSong, Songs,
-}
+import client/lib/route.{About, CreateSong, Index, NotFound, ShowSong, Songs}
 import client/routes/about
 import client/routes/index
 import client/routes/songs
-import gleam/option.{Some, None}
+import gleam/option.{None, Some}
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html

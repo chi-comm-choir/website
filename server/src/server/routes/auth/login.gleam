@@ -3,8 +3,8 @@ import gleam/dynamic
 import gleam/http.{Post}
 import gleam/json
 import gleam/result
-import wisp.{type Request, type Response}
 import server/db/user_session
+import wisp.{type Request, type Response}
 
 pub fn login(req: Request) -> Response {
   use body <- wisp.require_json(req)
@@ -23,15 +23,9 @@ fn decode_create_user(
   json: dynamic.Dynamic,
 ) -> Result(Login, dynamic.DecodeErrors) {
   let decoder =
-    dynamic.decode1(
-      Login,
-      dynamic.field("password", dynamic.string),
-    )
+    dynamic.decode1(Login, dynamic.field("password", dynamic.string))
   case decoder(json) {
-    Ok(login) ->
-      Ok(Login(
-        password: login.password,
-      ))
+    Ok(login) -> Ok(Login(password: login.password))
     Error(error) -> Error(error)
   }
 }

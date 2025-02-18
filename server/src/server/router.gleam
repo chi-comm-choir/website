@@ -1,28 +1,29 @@
 import client
 import client/lib/model.{Model}
-import client/lib/route.{
-  About, CreateSong, Index, NotFound, ShowSong, Songs,
-}
+import client/lib/route.{About, CreateSong, Index, NotFound, ShowSong, Songs}
 import cors_builder as cors
+import gleam/erlang/process.{type Subject}
 import gleam/http
 import gleam/int
 import gleam/option.{None, Some}
 import lustre/element
 import server/db/user_session
 import server/response
-import server/routes/song
-import server/routes/songs
 import server/routes/auth/login
 import server/routes/auth/logout
 import server/routes/auth/validate
+import server/routes/cache/session_cache.{type CacheMessage}
+import server/routes/song
+import server/routes/songs
 import server/scaffold
 import server/web
 import shared.{AuthUser}
 import wisp.{type Request, type Response}
-import server/routes/cache/session_cache.{type CacheMessage}
-import gleam/erlang/process.{type Subject}
 
-pub fn handle_request(req: Request, cache_subject: Subject(CacheMessage)) -> Response {
+pub fn handle_request(
+  req: Request,
+  cache_subject: Subject(CacheMessage),
+) -> Response {
   use req <- web.middleware(req)
   use req <- cors.wisp_middleware(
     req,
@@ -39,7 +40,11 @@ pub fn handle_request(req: Request, cache_subject: Subject(CacheMessage)) -> Res
   }
 }
 
-fn api_routes(req: Request, route_segments: List(String), cache_subject: Subject(CacheMessage)) -> Response {
+fn api_routes(
+  req: Request,
+  route_segments: List(String),
+  cache_subject: Subject(CacheMessage),
+) -> Response {
   case route_segments {
     ["api", "songs"] ->
       case user_session.get_user_from_session(req, cache_subject) {
@@ -48,7 +53,7 @@ fn api_routes(req: Request, route_segments: List(String), cache_subject: Subject
       }
     ["api", "songs", song_id] -> {
       case user_session.get_user_from_session(req, cache_subject) {
-        Ok(_) -> 
+        Ok(_) ->
           case int.parse(song_id) {
             Ok(id) -> song.song(req, id)
             Error(_) -> response.error("Invalid song_id for song, must be int")
@@ -70,25 +75,32 @@ fn protected_route(
   cache_subject: Subject(CacheMessage),
 ) -> #(route.Route, Int) {
   case user_session.get_user_from_session(req, cache_subject) {
-    Ok(user) -> case user, admin_only {
-      #(_, 1), True -> route
-      _, False -> route
-      _, True -> #(Index, 401)
-    }
+    Ok(user) ->
+      case user, admin_only {
+        #(_, 1), True -> route
+        _, False -> route
+        _, True -> #(Index, 401)
+      }
     Error(_) -> #(Index, 401)
   }
 }
 
-fn page_routes(req: Request, route_segments: List(String), cache_subject: Subject(CacheMessage)) -> Response {
+fn page_routes(
+  req: Request,
+  route_segments: List(String),
+  cache_subject: Subject(CacheMessage),
+) -> Response {
   let #(route, response) = case route_segments {
     [] -> #(Index, 200)
     ["about"] -> #(About, 200)
     ["songs"] -> protected_route(req, #(Songs, 200), False, cache_subject)
     // ["auth", "login"] -> #(Login, 200)
-    ["create-song"] -> protected_route(req, #(CreateSong, 200), True, cache_subject)
+    ["create-song"] ->
+      protected_route(req, #(CreateSong, 200), True, cache_subject)
     ["song", song_id] ->
       case int.parse(song_id) {
-        Ok(id) -> protected_route(req, #(ShowSong(id), 200), False, cache_subject)
+        Ok(id) ->
+          protected_route(req, #(ShowSong(id), 200), False, cache_subject)
         Error(_) -> #(NotFound, 404)
       }
     _ -> #(NotFound, 404)

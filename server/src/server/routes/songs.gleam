@@ -3,6 +3,7 @@ import cake/select
 import cake/where
 import gleam/bool
 import gleam/dynamic.{type Dynamic}
+import gleam/dynamic/decode
 import gleam/http.{Get, Post}
 import gleam/json
 import gleam/list
@@ -149,7 +150,11 @@ fn does_song_with_href_exist(song: CreateSong) {
           None -> panic as "Unreachable due to guard"
         }),
       ],
-      dynamic.tuple2(dynamic.string, dynamic.string),
+      {
+        use str1 <- decode.field(0, decode.string)
+        use str2 <- decode.field(1, decode.string)
+        decode.success(#(str1, str2))
+      }
     )
   {
     Ok(songs) -> Ok(list.length(songs) > 0)
