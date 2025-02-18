@@ -1,15 +1,26 @@
 import client/lib/model.{type Model}
 import lustre/element.{text}
 import lustre/element/html.{div, section, h1, h2, p, img, a}
-import lustre/attribute.{class, alt, href}
+import lustre/attribute.{class, alt, href, style}
+import lustre/ui/classes
 
 pub fn about(_model: Model) {
   div([], [
     section([class("about-hero")], [
       div([class("container")], [
-        h1([], [text("About Us")]),
-        p([class("lead")], [text("about")]),
-        img([alt("banner image")]),
+        div([
+          class("hero-content"),
+          style([
+            #("display", "flex"),
+            #("flex-direction", "column"),
+            #("align-items", "center"),
+            #("padding", "2rem 1rem"),
+          ]),
+        ], [
+          h1([classes.text_4xl()], [text("About Us")]),
+          p([class("lead")], [text("about")]),
+          img([alt("banner image")]),
+        ]),
       ]),
     ]),
     section([class("directors-bio")], [
