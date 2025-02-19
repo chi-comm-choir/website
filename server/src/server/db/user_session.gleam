@@ -1,7 +1,6 @@
 import cake/insert
 import cake/select
 import cake/where
-import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/erlang/process.{type Subject}
 import gleam/io

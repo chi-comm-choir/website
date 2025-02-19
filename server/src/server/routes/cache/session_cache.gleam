@@ -83,10 +83,10 @@ pub fn cache_remove(cache: Subject(CacheMessage), token: String) -> Nil {
   actor.send(cache, Remove(token))
 }
 
-fn cache_debug_print(cache: Dict(String, CacheEntry)) -> Nil {
-  io.println("PRINTING FULL CACHE\n----------------")
-  dict.each(cache, print_entry)
-}
+// fn cache_debug_print(cache: Dict(String, CacheEntry)) -> Nil {
+//   io.println("PRINTING FULL CACHE\n----------------")
+//   dict.each(cache, print_entry)
+// }
 
 fn print_entry(token: String, entry: CacheEntry) -> Nil {
   let CacheEntry(id, admin, time) = entry
