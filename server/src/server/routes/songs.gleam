@@ -67,16 +67,15 @@ type CreateSong {
   )
 }
 
-fn decode_create_song(json: Dynamic) -> Result(CreateSong, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode4(
-      CreateSong,
-      dynamic.field("title", dynamic.string),
-      dynamic.optional_field("href", dynamic.string),
-      dynamic.optional_field("filepath", dynamic.string),
-      dynamic.field("tags", dynamic.list(dynamic.int)),
-    )
-  decoder(json)
+fn decode_create_song(json: Dynamic) -> Result(CreateSong, List(decode.DecodeError)) {
+  let decoder = {
+    use title <- decode.field("title", decode.string)
+    use href <- decode.field("href", decode.optional(decode.string))
+    use filepath <- decode.field("filepath", decode.optional(decode.string))
+    use tags <- decode.field("tags", decode.list(decode.int))
+    decode.success(CreateSong(title, href, filepath, tags))
+  }
+  decode.run(json, decoder)
 }
 
 fn insert_song_to_db(_req: Request, song: CreateSong) {

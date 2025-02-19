@@ -3,7 +3,7 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import server/db.{list_to_tuple}
+import server/db
 import shared.{type Song, Song}
 import sqlight.{type Value}
 import wisp.{type Request}
